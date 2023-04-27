@@ -41,7 +41,7 @@ static void requestComplete(Request *req)
     camera->queueRequest(req);
 }
 
-int64_t frame_duraion_limit[2] = {20000, 20000};
+int64_t frame_duraion_limit[2] = {15000, 15000};
 int main()
 {
     std::unique_ptr<CameraManager> cm = std::make_unique<CameraManager>();
@@ -67,6 +67,7 @@ int main()
     // pick stream config
     clog << "supported stream configs:" << endl;
     std::unique_ptr<CameraConfiguration> config = camera->generateConfiguration({StreamRole::VideoRecording});
+    //std::unique_ptr<CameraConfiguration> config = camera->generateConfiguration({StreamRole::Raw});
     for (auto &stream_config : *config)
         clog << "  " << stream_config.toString() << endl;
 
@@ -79,8 +80,8 @@ int main()
             clog << " " << px_fmt.toString();
         clog << endl;
     }
-    // stream_cfg.size.width = 640;
-    // stream_cfg.size.height = 480;
+    stream_cfg.size.width = 1280;
+    stream_cfg.size.height = 720;
 
     auto cfg_state = config->validate();
     if (cfg_state == CameraConfiguration::Valid)

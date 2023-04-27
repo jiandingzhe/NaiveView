@@ -20,7 +20,13 @@ int main()
 
     auto init_re = SDL_VideoInit(sel_drv);
     clog << "init video " << sel_drv << " returned " << init_re << endl;
-    SDL_VideoQuit();
+
+    int n_disp = SDL_GetNumVideoDisplays();
+    clog << "display number: " << n_disp << endl;
+    for (int i_disp = 0; i_disp < n_disp; i_disp+=1)
+    {
+        clog << "  " << SDL_GetDisplayName(i_disp) << endl;
+    }
 
     SDL_Window *window = SDL_CreateWindow("SDL2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480,
                                           SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
