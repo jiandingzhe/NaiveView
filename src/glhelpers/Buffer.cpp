@@ -22,9 +22,9 @@ GLBuffer::BindScope::~BindScope()
 {
 #ifndef NDEBUG
     GLuint curr_binding = 0;
-    if (obj.id == GL_ARRAY_BUFFER)
+    if (obj.target == GL_ARRAY_BUFFER)
         curr_binding = get_binding(GL_ARRAY_BUFFER_BINDING);
-    else if (obj.id == GL_ELEMENT_ARRAY_BUFFER)
+    else if (obj.target == GL_ELEMENT_ARRAY_BUFFER)
         curr_binding = get_binding(GL_ELEMENT_ARRAY_BUFFER_BINDING);
     assert(obj.id == curr_binding);
 #endif
@@ -32,12 +32,14 @@ GLBuffer::BindScope::~BindScope()
 
 void GLBuffer::BindScope::setSize(unsigned numBytes, GLenum usage)
 {
-    glBufferData(obj.id, numBytes, nullptr, usage);
+    glBufferData(obj.target, numBytes, nullptr, usage);
+    CHECK_GL;
 }
 
 void GLBuffer::BindScope::setData(void *data, unsigned numBytes, GLenum usage)
 {
-    glBufferData(obj.id, numBytes, data, usage);
+    glBufferData(obj.target, numBytes, data, usage);
+    CHECK_GL;
 }
 
 GLBuffer::GLBuffer(GLenum target) : id(gen_one_buffer()), target(target)

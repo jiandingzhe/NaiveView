@@ -12,7 +12,7 @@ GLTexture2D::BindScope::BindScope(GLTexture2D &obj) : obj(obj)
 GLTexture2D::BindScope::~BindScope()
 {
 #ifndef NDEBUG
-    GLuint curr_tex = get_binding(GL_ELEMENT_ARRAY_BUFFER_BINDING);
+    GLuint curr_tex = get_binding(GL_TEXTURE_BINDING_2D);
     assert(curr_tex == obj.id);
 #endif
 }
@@ -20,6 +20,12 @@ GLTexture2D::BindScope::~BindScope()
 void GLTexture2D::BindScope::setMono8Image(int w, int h, const void *data)
 {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, w, h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, data);
+    CHECK_GL;
+}
+
+void GLTexture2D::BindScope::setRGBImage(int w, int h, const void *data)
+{
+    glTexImage2D(GL_TEXTURE_2D, 0,  GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     CHECK_GL;
 }
 

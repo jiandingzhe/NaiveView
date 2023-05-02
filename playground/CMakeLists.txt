@@ -11,6 +11,5 @@ add_executable(bh1750_play bh1750_play.cpp)
 target_compile_features(bh1750_play PUBLIC cxx_std_17)
 
 add_executable(draw_something_kms draw_something_kms.cpp)
-target_link_libraries(draw_something_kms SDL2::SDL2 OpenGL::OpenGL)
-target_compile_features(draw_something_kms PUBLIC cxx_std_17)
+target_link_libraries(draw_something_kms glhelpers)
 

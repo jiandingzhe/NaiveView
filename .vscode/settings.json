@@ -1,0 +1,5 @@
+{
+    "clangd.fallbackFlags": [
+        "-I/usr/include/SDL2",
+    ]
+}

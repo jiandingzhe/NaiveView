@@ -1,11 +1,13 @@
 #include "Program.h"
 #include <GLES2/gl2.h>
+#include <SDL_opengles2.h>
 
 #include "Utils.h"
 
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 using std::clog;
 using std::endl;
@@ -14,7 +16,7 @@ struct GLProgram::Guts
 {
     GLint get_uniform_loc(const char *name) const;
     std::unordered_map<std::string, Attr> uniforms;
-    std::unordered_map<std::string, Attr> attribs;
+    std::vector<std::pair<std::string, Attr>> attribs;
 };
 
 GLint GLProgram::Guts::get_uniform_loc(const char *name) const
@@ -103,6 +105,42 @@ static std::string &_last_error_()
     return error;
 }
 
+void GLProgram::attachShader(GLuint shader)
+{
+    glAttachShader(id, shader);
+    CHECK_GL;
+}
+
+inline std::pair<GLenum, int> to_scalar_type_size(GLenum type)
+{
+    switch (type)
+    {
+    case GL_FLOAT:
+        return {GL_FLOAT, 1};
+    case GL_FLOAT_VEC2:
+        return {GL_FLOAT, 2};
+    case GL_FLOAT_VEC3:
+        return {GL_FLOAT, 3};
+    case GL_FLOAT_VEC4:
+        return {GL_FLOAT, 4};
+    case GL_INT:
+        return {GL_INT, 1};
+    case GL_UNSIGNED_INT:
+        return {GL_UNSIGNED_INT, 1};
+    case GL_SHORT:
+        return {GL_SHORT, 1};
+    case GL_UNSIGNED_SHORT:
+        return {GL_UNSIGNED_SHORT, 1};
+    case GL_BYTE:
+        return {GL_BYTE, 1};
+    case GL_UNSIGNED_BYTE:
+        return {GL_UNSIGNED_BYTE, 1};
+    default:
+        assert(false);
+        return {type, 1};
+    }
+}
+
 bool GLProgram::link()
 {
     glLinkProgram(id);
@@ -133,8 +171,13 @@ bool GLProgram::link()
         Attr attr;
         glGetActiveAttrib(id, i_attr, sizeof(name_buf), &name_len, &attr.size, &attr.type, name_buf);
         attr.location = glGetAttribLocation(id, name_buf);
+        auto scalar_type = to_scalar_type_size(attr.type);
+        attr.type = scalar_type.first;
+        attr.size *= scalar_type.second;
         std::string name(name_buf, size_t(name_len));
-        guts->attribs.insert({name, attr});
+        if (guts->attribs.size() < attr.location + 1)
+            guts->attribs.resize(attr.location + 1);
+        guts->attribs[attr.location] = {name, attr};
     }
     CHECK_GL;
 
@@ -158,9 +201,30 @@ bool GLProgram::link()
 
 GLProgram::Attr GLProgram::getAttribute(const char *name) const
 {
-    auto i_attr = guts->attribs.find(std::string(name));
-    if (i_attr == guts->attribs.end())
-        return {};
-    else
-        return i_attr->second;
+    for (const auto &attr : guts->attribs)
+    {
+        if (attr.first == name)
+            return attr.second;
+    }
+    return {};
+}
+
+bool GLProgram::configAttribute(GLuint index, GLsizei offset, GLsizei stride, GLboolean normalized)
+{
+    if (index >= guts->attribs.size())
+        return false;
+    const auto &attrib = guts->attribs[index].second;
+    assert(attrib.location == index);
+    if (attrib.location < 0 || attrib.size < 1 || attrib.type == 9)
+        return false;
+    glEnableVertexAttribArray(index);
+    CHECK_GL;
+    glVertexAttribPointer(index, attrib.size, attrib.type, normalized, stride, (const void *)offset);
+    CHECK_GL;
+    return true;
+}
+
+const std::string &GLProgram::getLastError()
+{
+    return _last_error_();
 }

@@ -1,0 +1,5 @@
+file(GLOB_RECURSE glhelper_source_files glhelpers/*.h glhelpers/*.cpp)
+add_library(glhelpers STATIC ${glhelper_source_files})
+target_link_libraries(glhelpers SDL2::SDL2 OpenGL::OpenGL)
+target_include_directories(glhelpers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(glhelpers PUBLIC cxx_std_17)

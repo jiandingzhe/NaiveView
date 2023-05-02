@@ -9,4 +9,5 @@ message("SDL2_LIBRARIES: ${SDL2_LIBRARIES}")
 message("SDL2_INCLUDE_DIRS: ${SDL2_INCLUDE_DIRS}")
 pkg_check_modules(libcamera REQUIRED IMPORTED_TARGET libcamera)
 
+add_subdirectory(src)
 add_subdirectory(playground)

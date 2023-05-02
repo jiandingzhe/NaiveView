@@ -5,7 +5,7 @@
 class GLBuffer
 {
   public:
-    class BindScope
+    struct BindScope
     {
         BindScope(GLBuffer &);
         ~BindScope();
@@ -16,6 +16,7 @@ class GLBuffer
     };
 
     GLBuffer(GLenum target);
+    GLBuffer(const GLBuffer &) = delete;
     ~GLBuffer();
 
     const GLuint id;

@@ -12,6 +12,7 @@ class GLTexture2D
         ~BindScope();
 
         void setMono8Image(int w, int h, const void *data);
+        void setRGBImage(int w, int h, const void *data);
 
         GLTexture2D &obj;
     };
