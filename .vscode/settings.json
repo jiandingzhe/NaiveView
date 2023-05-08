@@ -1,5 +1,7 @@
 {
     "clangd.fallbackFlags": [
         "-I/usr/include/SDL2",
+        "-I/usr/include/libcamera",
+        "-std=c++17"
     ]
 }

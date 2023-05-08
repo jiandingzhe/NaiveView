@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 project(NaiveView)
 
+include(cmake/WrapResource.cmake)
+
+find_package(Perl REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(SDL2 REQUIRED)
 set(OpenGL_GL_PREFERENCE GLVND)
