@@ -14,7 +14,7 @@ die "input file <$f_in> does not exist" if !-f $f_in;
 die "output directory not specified" if !defined $d_out;
 die "output file prefix not specified" if !defined $sym_prefix_out;
 
-my $symbol = $f_in;
+my $symbol = $sym_prefix_out;
 $symbol =~ s/[^A-Za-z0-9_\-]/_/g;
 
 my $full_prefix = catfile $d_out, $sym_prefix_out;
@@ -100,6 +100,7 @@ HEREDOC
 }
 
 print $fh_src <<HEREDOC;
+    0
 };
 HEREDOC
 

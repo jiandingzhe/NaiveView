@@ -1,6 +1,5 @@
 #pragma once
 
-#include "FrameTask.h"
 #include "TaskQueue.h"
 
 #include <libcamera/camera.h>
@@ -10,9 +9,13 @@
 class CameraReader
 {
   public:
-    CameraReader(std::shared_ptr<libcamera::Camera> camera, TaskQueue<FrameTask> &queue);
+    typedef TaskQueue<libcamera::Request> ReqQueue;
+    
+    CameraReader(std::shared_ptr<libcamera::Camera> camera);
     ~CameraReader();
 
+    ReqQueue* filledRequests();
+    void sendBackFinishedRequest(libcamera::Request*);
     bool configure(int width, int height, int expectedIntervalUS);
     bool start();
     void stop();

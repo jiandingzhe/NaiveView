@@ -1,5 +1,4 @@
 #include "CameraReader.h"
-#include "FrameTask.h"
 
 #include <libcamera/libcamera.h>
 
@@ -11,13 +10,12 @@ using std::endl;
 
 struct CameraReader::Guts
 {
-    Guts(TaskQueue<FrameTask> &queue);
     void handle_request(libcamera::Request *req);
 
-    TaskQueue<FrameTask> &queue;
+    std::unique_ptr<ReqQueue> queue;
     std::shared_ptr<libcamera::Camera> camera;
     std::unique_ptr<libcamera::FrameBufferAllocator> allocator;
-    std::vector<std::unique_ptr<FrameTask>> tasks;
+    std::vector<std::unique_ptr<libcamera::Request>> reqs;
     std::atomic<int> is_playing{0};
 
     std::int64_t fuck_pair[2] = {};
@@ -25,48 +23,13 @@ struct CameraReader::Guts
     int use_h = 0;
 };
 
-CameraReader::Guts::Guts(TaskQueue<FrameTask> &queue) : queue(queue)
-{
-}
-
 void CameraReader::Guts::handle_request(libcamera::Request *req)
 {
-    using namespace std::chrono_literals;
-    auto *task = (FrameTask *)req->cookie();
-    assert(task->status == FrameTask::TaskStatus_Snapping);
-    if (is_playing == 0)
-        return;
-
-    // send frame to consumer
-    int expect_status = FrameTask::TaskStatus_Snapping;
-    if (!task->status.compare_exchange_weak(expect_status, FrameTask::TaskStatus_Drawing))
-    {
-        clog << "failed to exchange task from snapping to drawing: current status "
-             << toString(FrameTask::TaskStatus(expect_status)) << endl;
-        return;
-    }
-    queue.add(task);
-    while (is_playing != 0 && task->status != FrameTask::TaskStatus_Idle)
-        std::this_thread::sleep_for(1ms);
-
-    // queue for next frame
-    if (is_playing != 0)
-    {
-        int expect_status = FrameTask::TaskStatus_Idle;
-        if (task->status.compare_exchange_weak(expect_status, FrameTask::TaskStatus_Snapping))
-        {
-            req->reuse(libcamera::Request::ReuseBuffers);
-            camera->queueRequest(req);
-        }
-        else
-        {
-            assert(expect_status == FrameTask::TaskStatus_Deleting);
-        }
-    }
+    if (req->status() == libcamera::Request::RequestComplete)
+        queue->add(req);
 }
 
-CameraReader::CameraReader(std::shared_ptr<libcamera::Camera> camera, TaskQueue<FrameTask> &queue)
-    : guts(new Guts(queue))
+CameraReader::CameraReader(std::shared_ptr<libcamera::Camera> camera) : guts(new Guts)
 {
     guts->camera = camera;
     guts->camera->acquire();
@@ -78,6 +41,21 @@ CameraReader::~CameraReader()
 {
     guts->camera->release();
     guts->camera->requestCompleted.disconnect(guts.get());
+}
+
+CameraReader::ReqQueue *CameraReader::filledRequests()
+{
+    return guts->queue.get();
+}
+
+void CameraReader::sendBackFinishedRequest(libcamera::Request*req)
+{
+    // queue for next frame
+    if (guts->is_playing != 0)
+    {
+        req->reuse(libcamera::Request::ReuseBuffers);
+        guts->camera->queueRequest(req);
+    }
 }
 
 bool CameraReader::configure(int expectWidth, int expectHeight, int expectedIntervalUS)
@@ -129,31 +107,31 @@ bool CameraReader::configure(int expectWidth, int expectHeight, int expectedInte
     auto &buffers = guts->allocator->buffers(stream);
 
     // create request for each buffer
-    guts->tasks.clear();
+    guts->reqs.clear();
     guts->fuck_pair[0] = expectedIntervalUS;
     guts->fuck_pair[1] = expectedIntervalUS;
     for (unsigned int i = 0; i < buffers.size(); ++i)
     {
-        std::unique_ptr<FrameTask> task(new FrameTask);
-        task->request = guts->camera->createRequest((std::uint64_t)task.get());
-        if (task->request == nullptr)
+        auto req = guts->camera->createRequest();
+        if (req == nullptr)
         {
             clog << "failed to create request for camera " << guts->camera->id() << endl;
             return false;
         }
 
-        task->request->controls().set(controls::FrameDurationLimits, Span<const int64_t, 2>(guts->fuck_pair));
+        req->controls().set(controls::FrameDurationLimits, Span<const int64_t, 2>(guts->fuck_pair));
 
         const std::unique_ptr<FrameBuffer> &buffer = buffers[i];
-        int ret = task->request->addBuffer(stream, buffer.get());
+        int ret = req->addBuffer(stream, buffer.get());
         if (ret < 0)
         {
             clog << "Can't set buffer for request" << std::endl;
             return false;
         }
 
-        guts->tasks.push_back(std::move(task));
+        guts->reqs.push_back(std::move(req));
     }
+    guts->queue.reset(new ReqQueue(unsigned(buffers.size())));
     return true;
 }
 
@@ -166,17 +144,9 @@ bool CameraReader::start()
         return false;
     }
     guts->is_playing = 1;
-    for (auto &task : guts->tasks)
+    for (auto &req : guts->reqs)
     {
-        int expect_status = FrameTask::TaskStatus_Idle;
-        while (!task->status.compare_exchange_weak(expect_status, FrameTask::TaskStatus_Snapping))
-        {
-            if (expect_status == FrameTask::TaskStatus_Deleting)
-                return false;
-            expect_status = FrameTask::TaskStatus_Idle;
-            std::this_thread::sleep_for(1ms);
-        }
-        guts->camera->queueRequest(task->request.get());
+        guts->camera->queueRequest(req.get());
     }
     return true;
 }
@@ -184,7 +154,7 @@ bool CameraReader::start()
 void CameraReader::stop()
 {
     using namespace std::chrono_literals;
-    guts->camera->stop();
-    std::this_thread::sleep_for(10ms);
     guts->is_playing = 0;
+    std::this_thread::sleep_for(10ms);
+    guts->camera->stop();
 }

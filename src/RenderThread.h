@@ -1,14 +1,13 @@
 #pragma once
 
-#include "FrameTask.h"
-#include "TaskQueue.h"
+#include "CameraReader.h"
 
 #include <memory>
 
 class RenderThread
 {
   public:
-    RenderThread(TaskQueue<FrameTask> &queue);
+    RenderThread(CameraReader &reader);
     ~RenderThread();
   private:
     struct Guts;
