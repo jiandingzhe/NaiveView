@@ -12,21 +12,19 @@
 using std::clog;
 using std::endl;
 
+typedef std::vector<std::pair<std::string, GLProgram::Attr>> AttrArray;
+
+void ensure_size(AttrArray &arr, int expect)
+{
+    if (arr.size() < size_t(expect))
+        arr.resize(size_t(expect));
+}
+
 struct GLProgram::Guts
 {
-    GLint get_uniform_loc(const char *name) const;
-    std::unordered_map<std::string, Attr> uniforms;
-    std::vector<std::pair<std::string, Attr>> attribs;
+    AttrArray uniforms;
+    AttrArray attribs;
 };
-
-GLint GLProgram::Guts::get_uniform_loc(const char *name) const
-{
-    auto i_uni = uniforms.find(name);
-    if (i_uni == uniforms.end())
-        return -1;
-    else
-        return i_uni->second.location;
-}
 
 GLProgram::BindScope::BindScope(GLProgram &obj) : obj(obj)
 {
@@ -39,53 +37,99 @@ GLProgram::BindScope::~BindScope()
     assert(obj.id == curr_prog);
 }
 
-void GLProgram::BindScope::setUniform(const char *name, GLfloat n1)
+void GLProgram::BindScope::setUniform(GLint loc, GLfloat n1)
 {
-    glUniform1f(obj.guts->get_uniform_loc(name), n1);
+    if (loc >= 0)
+    {
+        assert(obj.guts->uniforms[loc].second.size == 1);
+        assert(obj.guts->uniforms[loc].second.type == GL_FLOAT);
+        glUniform1f(loc, n1);
+    }
 }
-void GLProgram::BindScope::setUniform(const char *name, GLint n1)
+void GLProgram::BindScope::setUniform(GLint loc, GLint n1)
 {
-    glUniform1i(obj.guts->get_uniform_loc(name), n1);
+    if (loc >= 0)
+    {
+        const auto &meta = obj.guts->uniforms[loc].second;
+        assert(meta.size == 1);
+        assert(meta.type == GL_INT || meta.type == GL_SAMPLER_2D || meta.type == GL_SAMPLER_CUBE);
+        glUniform1i(loc, n1);
+    }
 }
-void GLProgram::BindScope::setUniform(const char *name, GLfloat n1, GLfloat n2)
+void GLProgram::BindScope::setUniform(GLint loc, GLfloat n1, GLfloat n2)
 {
-    glUniform2f(obj.guts->get_uniform_loc(name), n1, n2);
+    if (loc >= 0)
+    {
+        assert(obj.guts->uniforms[loc].second.size == 2);
+        assert(obj.guts->uniforms[loc].second.type == GL_FLOAT);
+        glUniform2f(loc, n1, n2);
+    }
 }
-void GLProgram::BindScope::setUniform(const char *name, GLfloat n1, GLfloat n2, GLfloat n3)
+void GLProgram::BindScope::setUniform(GLint loc, GLfloat n1, GLfloat n2, GLfloat n3)
 {
-    glUniform3f(obj.guts->get_uniform_loc(name), n1, n2, n3);
+    if (loc >= 0)
+    {
+        assert(obj.guts->uniforms[loc].second.size == 3);
+        assert(obj.guts->uniforms[loc].second.type == GL_FLOAT);
+        glUniform3f(loc, n1, n2, n3);
+    }
 }
-void GLProgram::BindScope::setUniform(const char *name, GLfloat n1, GLfloat n2, GLfloat n3, GLfloat n4)
+void GLProgram::BindScope::setUniform(GLint loc, GLfloat n1, GLfloat n2, GLfloat n3, GLfloat n4)
 {
-    glUniform4f(obj.guts->get_uniform_loc(name), n1, n2, n3, n4);
+    if (loc >= 0)
+    {
+        assert(obj.guts->uniforms[loc].second.size == 4);
+        assert(obj.guts->uniforms[loc].second.type == GL_FLOAT);
+        glUniform4f(loc, n1, n2, n3, n4);
+    }
 }
-void GLProgram::BindScope::setUniform(const char *name, GLint n1, GLint n2)
+void GLProgram::BindScope::setUniform(GLint loc, GLint n1, GLint n2)
 {
-    glUniform2i(obj.guts->get_uniform_loc(name), n1, n2);
+    if (loc >= 0)
+    {
+        assert(obj.guts->uniforms[loc].second.size == 2);
+        assert(obj.guts->uniforms[loc].second.type == GL_INT);
+        glUniform2i(loc, n1, n2);
+    }
 }
-void GLProgram::BindScope::setUniform(const char *name, GLint n1, GLint n2, GLint n3)
+void GLProgram::BindScope::setUniform(GLint loc, GLint n1, GLint n2, GLint n3)
 {
-    glUniform3i(obj.guts->get_uniform_loc(name), n1, n2, n3);
+    if (loc >= 0)
+    {
+        assert(obj.guts->uniforms[loc].second.size == 3);
+        assert(obj.guts->uniforms[loc].second.type == GL_INT);
+        glUniform3i(loc, n1, n2, n3);
+    }
 }
-void GLProgram::BindScope::setUniform(const char *name, GLint n1, GLint n2, GLint n3, GLint n4)
+void GLProgram::BindScope::setUniform(GLint loc, GLint n1, GLint n2, GLint n3, GLint n4)
 {
-    glUniform4i(obj.guts->get_uniform_loc(name), n1, n2, n3, n4);
+    if (loc >= 0)
+    {
+        assert(obj.guts->uniforms[loc].second.size == 4);
+        assert(obj.guts->uniforms[loc].second.type == GL_INT);
+        glUniform4i(loc, n1, n2, n3, n4);
+    }
 }
-void GLProgram::BindScope::setUniform(const char *name, const GLfloat *values, GLsizei numValues)
+void GLProgram::BindScope::setUniform(GLint loc, const GLfloat *values, GLsizei numValues)
 {
-    glUniform1fv(obj.guts->get_uniform_loc(name), numValues, values);
+    if (loc >= 0)
+    {
+        assert(obj.guts->uniforms[loc].second.size == numValues);
+        assert(obj.guts->uniforms[loc].second.type == GL_FLOAT);
+        glUniform1fv(loc, numValues, values);
+    }
 }
-void GLProgram::BindScope::setUniformMat2(const char *name, const GLfloat *v, GLint num, GLboolean trns)
+void GLProgram::BindScope::setUniformMat2(GLint loc, const GLfloat *v, GLint num, GLboolean trns)
 {
-    glUniformMatrix2fv(obj.guts->get_uniform_loc(name), num, trns, v);
+    glUniformMatrix2fv(loc, num, trns, v);
 }
-void GLProgram::BindScope::setUniformMat3(const char *name, const GLfloat *v, GLint num, GLboolean trns)
+void GLProgram::BindScope::setUniformMat3(GLint loc, const GLfloat *v, GLint num, GLboolean trns)
 {
-    glUniformMatrix3fv(obj.guts->get_uniform_loc(name), num, trns, v);
+    glUniformMatrix3fv(loc, num, trns, v);
 }
-void GLProgram::BindScope::setUniformMat4(const char *name, const GLfloat *v, GLint num, GLboolean trns)
+void GLProgram::BindScope::setUniformMat4(GLint loc, const GLfloat *v, GLint num, GLboolean trns)
 {
-    glUniformMatrix4fv(obj.guts->get_uniform_loc(name), num, trns, v);
+    glUniformMatrix4fv(loc, num, trns, v);
 }
 
 GLProgram::GLProgram() : id(glCreateProgram()), guts(new Guts)
@@ -135,6 +179,9 @@ inline std::pair<GLenum, int> to_scalar_type_size(GLenum type)
         return {GL_BYTE, 1};
     case GL_UNSIGNED_BYTE:
         return {GL_UNSIGNED_BYTE, 1};
+    case GL_SAMPLER_2D:
+    case GL_SAMPLER_CUBE:
+        return {type, 1};
     default:
         assert(false);
         return {type, 1};
@@ -154,7 +201,6 @@ bool GLProgram::link()
         GLsizei infoLogLength = 0;
         glGetProgramInfoLog(id, sizeof(infoLog), &infoLogLength, infoLog);
         _last_error_() = std::string(infoLog, (size_t)infoLogLength);
-        std::clog << _last_error_() << std::endl;
         return false;
     }
 
@@ -162,7 +208,6 @@ bool GLProgram::link()
     guts->attribs.clear();
     GLint n_attr = 0;
     glGetProgramiv(id, GL_ACTIVE_ATTRIBUTES, &n_attr);
-    clog << "GLSL program #" << id << " has " << n_attr << " attributes:" << endl;
     GLchar name_buf[255];
 
     for (int i_attr = 0; i_attr < n_attr; i_attr++)
@@ -175,9 +220,8 @@ bool GLProgram::link()
         attr.type = scalar_type.first;
         attr.size *= scalar_type.second;
         std::string name(name_buf, size_t(name_len));
-        if (guts->attribs.size() < attr.location + 1)
-            guts->attribs.resize(attr.location + 1);
-        guts->attribs[attr.location] = {name, attr};
+        ensure_size(guts->attribs, attr.location + 1);
+        guts->attribs[size_t(attr.location)] = {name, attr};
     }
     CHECK_GL;
 
@@ -191,8 +235,12 @@ bool GLProgram::link()
         Attr attr;
         glGetActiveUniform(id, i_uni, sizeof(name_buf), &name_len, &attr.size, &attr.type, name_buf);
         attr.location = glGetUniformLocation(id, name_buf);
+        auto scalar_type = to_scalar_type_size(attr.type);
+        attr.type = scalar_type.first;
+        attr.size *= scalar_type.second;
         std::string name(name_buf, size_t(name_len));
-        guts->uniforms.insert({name, attr});
+        ensure_size(guts->uniforms, attr.location + 1);
+        guts->uniforms[size_t(attr.location)] = {name, attr};
     }
     CHECK_GL;
 
@@ -205,6 +253,16 @@ GLProgram::Attr GLProgram::getAttribute(const char *name) const
     {
         if (attr.first == name)
             return attr.second;
+    }
+    return {};
+}
+
+GLProgram::Attr GLProgram::getUniform(const char *name) const
+{
+    for (const auto &uni : guts->uniforms)
+    {
+        if (uni.first == name)
+            return uni.second;
     }
     return {};
 }

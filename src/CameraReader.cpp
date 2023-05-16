@@ -48,7 +48,7 @@ CameraReader::ReqQueue *CameraReader::filledRequests()
     return guts->queue.get();
 }
 
-void CameraReader::sendBackFinishedRequest(libcamera::Request*req)
+void CameraReader::sendBackFinishedRequest(libcamera::Request *req)
 {
     // queue for next frame
     if (guts->is_playing != 0)
@@ -133,6 +133,15 @@ bool CameraReader::configure(int expectWidth, int expectHeight, int expectedInte
     }
     guts->queue.reset(new ReqQueue(unsigned(buffers.size())));
     return true;
+}
+
+int CameraReader::getActualWidth() const
+{
+    return guts->use_w;
+}
+int CameraReader::getActualHeight() const
+{
+    return guts->use_h;
 }
 
 bool CameraReader::start()

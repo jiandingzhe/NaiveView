@@ -13,7 +13,9 @@ add_library(naive_parts STATIC
     RenderThread.h RenderThread.cpp
     SdlHelpers.h
     TaskQueue.h)
-target_link_libraries(naive_parts PkgConfig::libcamera SDL2::SDL2 OpenGL::OpenGL atomic pthread)
+target_link_libraries(naive_parts glhelpers PkgConfig::libcamera SDL2::SDL2 OpenGL::OpenGL atomic pthread)
 target_include_directories(naive_parts PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-target_compile_features(naive_parts PUBLIC cxx_std_17)
 add_dependencies(naive_parts camera_vs_code_gen)
+
+add_executable(naive_view naive_view.cpp)
+target_link_libraries(naive_view naive_parts)

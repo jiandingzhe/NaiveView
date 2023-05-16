@@ -3,6 +3,8 @@
 #include "Utils.h"
 #include <GLES2/gl2.h>
 
+#include <iostream>
+
 GLShader::GLShader(GLenum type) : id(glCreateShader(type))
 {
     CHECK_GL;
@@ -39,6 +41,7 @@ bool GLShader::compile(const std::string &source)
         GLsizei infoLogLength = 0;
         glGetShaderInfoLog(id, sizeof(infoLog), &infoLogLength, infoLog);
         _last_error_() = std::string(infoLog);
+        assert(false);
         return false;
     }
 

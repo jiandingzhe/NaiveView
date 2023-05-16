@@ -12,18 +12,18 @@ class GLProgram
     {
         BindScope(GLProgram &);
         ~BindScope();
-        void setUniform(const char *name, GLfloat n1);
-        void setUniform(const char *name, GLint n1);
-        void setUniform(const char *name, GLfloat n1, GLfloat n2);
-        void setUniform(const char *name, GLfloat n1, GLfloat n2, GLfloat n3);
-        void setUniform(const char *name, GLfloat n1, GLfloat n2, GLfloat n3, GLfloat n4);
-        void setUniform(const char *name, GLint n1, GLint n2);
-        void setUniform(const char *name, GLint n1, GLint n2, GLint n3);
-        void setUniform(const char *name, GLint n1, GLint n2, GLint n3, GLint n4);
-        void setUniform(const char *name, const GLfloat *values, GLsizei numValues);
-        void setUniformMat2(const char *name, const GLfloat *v, GLint num, GLboolean trns);
-        void setUniformMat3(const char *name, const GLfloat *v, GLint num, GLboolean trns);
-        void setUniformMat4(const char *name, const GLfloat *v, GLint num, GLboolean trns);
+        void setUniform(GLint loc, GLfloat n1);
+        void setUniform(GLint loc, GLint n1);
+        void setUniform(GLint loc, GLfloat n1, GLfloat n2);
+        void setUniform(GLint loc, GLfloat n1, GLfloat n2, GLfloat n3);
+        void setUniform(GLint loc, GLfloat n1, GLfloat n2, GLfloat n3, GLfloat n4);
+        void setUniform(GLint loc, GLint n1, GLint n2);
+        void setUniform(GLint loc, GLint n1, GLint n2, GLint n3);
+        void setUniform(GLint loc, GLint n1, GLint n2, GLint n3, GLint n4);
+        void setUniform(GLint loc, const GLfloat *values, GLsizei numValues);
+        void setUniformMat2(GLint loc, const GLfloat *v, GLint numMatrix, GLboolean trns);
+        void setUniformMat3(GLint loc, const GLfloat *v, GLint numMatrix, GLboolean trns);
+        void setUniformMat4(GLint loc, const GLfloat *v, GLint numMatrix, GLboolean trns);
         GLProgram &obj;
     };
     struct Attr
@@ -42,6 +42,8 @@ class GLProgram
 
     Attr getAttribute(const char *name) const;
     bool configAttribute(GLuint index, GLsizei offset, GLsizei stride, GLboolean normalized = GL_FALSE);
+
+    Attr getUniform(const char *name) const;
 
     static const std::string &getLastError();
 
