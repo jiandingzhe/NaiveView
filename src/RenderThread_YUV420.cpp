@@ -9,8 +9,8 @@
 #include "shaders/camera_frame_vs.h"
 #include "shaders/camera_frame_yuv420_fs.h"
 
-#include <libcamera/framebuffer.h>
 #include <SDL_video.h>
+#include <libcamera/framebuffer.h>
 
 #include <atomic>
 #include <iostream>
@@ -80,7 +80,7 @@ struct RenderThread_YUV420::Guts
         break;                                                                                                         \
     }
 
-static void copy_plane_to_texture(const void *addr, const libcamera::FrameBuffer::Plane &plane, int w, int h,
+static void copy_plane_to_texture(const unsigned char *addr, const libcamera::FrameBuffer::Plane &plane, int w, int h,
                                   GLTexture2D &texture)
 {
     if (w * h != plane.length)
@@ -89,7 +89,7 @@ static void copy_plane_to_texture(const void *addr, const libcamera::FrameBuffer
         return;
     }
     GLTexture2D::BindScope scope_y(texture);
-    scope_y.setMono8Image(w, h, addr);
+    scope_y.setMono8Image(w, h, addr + plane.offset);
 }
 
 RenderThread_YUV420::RenderThread_YUV420(CameraReader &reader) : RenderThreadBase(reader), guts(new Guts)

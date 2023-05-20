@@ -22,9 +22,9 @@ int main()
     }
 
     CameraReader cam_reader(cameras[0]);
-    cam_reader.configure(libcamera::formats::RGB888, 1280, 720, 16000);
+    cam_reader.configure(libcamera::formats::YUV420, 1280, 720, 20000);
 
-    RenderThread_RGB888 render(cam_reader);
+    RenderThread_YUV420 render(cam_reader);
 
     cam_reader.start();
     render.start();
