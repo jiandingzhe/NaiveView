@@ -50,7 +50,7 @@ struct RenderThread::Guts
     std::unique_ptr<SDL_Window> window;
     SDL_GLContext gl_ctx = nullptr;
     std::unique_ptr<GLObjects> globjs;
-    std::atomic<int> gl_stop_flag;
+    std::atomic<int> gl_stop_flag{0};
     std::unique_ptr<std::thread> gl_thread;
 };
 
@@ -104,10 +104,12 @@ RenderThread::Guts::Guts(CameraReader &reader) : reader(reader)
     if (!bool(EXPR))                                                                                                   \
     {                                                                                                                  \
         assert(false);                                                                                                 \
-        goto REQ_BACK;                                                                                                 \
+        reader.sendBackFinishedRequest(req);                                                                           \
+        break;                                                                                                         \
     }
 
-static void copy_plane_to_texture(const libcamera::FrameBuffer::Plane &plane, int w, int h, GLTexture2D &texture)
+static void copy_plane_to_texture(const void *addr, const libcamera::FrameBuffer::Plane &plane, int w, int h,
+                                  GLTexture2D &texture)
 {
     if (w * h != plane.length)
     {
@@ -115,10 +117,7 @@ static void copy_plane_to_texture(const libcamera::FrameBuffer::Plane &plane, in
         return;
     }
     GLTexture2D::BindScope scope_y(texture);
-    void *addr = mmap(nullptr, plane.length, PROT_NONE, MAP_PRIVATE, plane.fd.get(), plane.offset);
     scope_y.setMono8Image(w, h, addr);
-    glFinish();
-    munmap(addr, plane.length);
 }
 
 void RenderThread::Guts::thread_body()
@@ -131,6 +130,7 @@ void RenderThread::Guts::thread_body()
         throw std::runtime_error("failed to create SDL OpenGL context");
 
     SDL_GL_SetSwapInterval(0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
 
     // create OpenGL objects
     globjs.reset(new GLObjects);
@@ -139,22 +139,42 @@ void RenderThread::Guts::thread_body()
 
     while (gl_stop_flag == 0)
     {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         // try to fetch frame
         auto *req = reader.filledRequests()->fetch();
-        if (req != nullptr)
+        while (req != nullptr)
         {
-            libcamera::FrameBuffer *buf;
-            int cam_w, cam_h;
             BREAK_WHEN_FAIL(req->buffers().size() > 0);
-            buf = req->buffers().begin()->second;
+            auto *buf = req->buffers().begin()->second;
+            const auto &planes = buf->planes();
             BREAK_WHEN_FAIL(buf->planes().size() == 3);
-            cam_w = reader.getActualWidth();
-            cam_h = reader.getActualHeight();
-            copy_plane_to_texture(buf->planes()[0], cam_w, cam_h, globjs->tex_frame_y);
-            copy_plane_to_texture(buf->planes()[1], cam_w, cam_h, globjs->tex_frame_u);
-            copy_plane_to_texture(buf->planes()[2], cam_w, cam_h, globjs->tex_frame_v);
-        REQ_BACK:
+            assert(planes[0].offset == 0);
+            auto fd = planes[0].fd.get();
+            assert(fd == planes[1].fd.get());
+            assert(fd == planes[2].fd.get());
+            size_t total_size = planes[0].length + planes[1].length + planes[2].length;
+            auto *addr = (unsigned char *)mmap(nullptr, total_size, PROT_READ, MAP_PRIVATE, fd, 0);
+            if (addr == MAP_FAILED)
+            {
+                clog << "mmap failed for camera dma fd " << fd << " size " << total_size << ": "
+                     << strerror(errno) << endl;
+                abort();
+            }
+            int cam_w = reader.getActualWidth();
+            int cam_h = reader.getActualHeight();
+            copy_plane_to_texture(addr, planes[0], cam_w, cam_h, globjs->tex_frame_y);
+            copy_plane_to_texture(addr, planes[1], cam_w / 2, cam_h / 2, globjs->tex_frame_u);
+            copy_plane_to_texture(addr, planes[2], cam_w / 2, cam_h / 2, globjs->tex_frame_v);
+            glFinish();
+            if (munmap(addr, total_size) != 0)
+            {
+                clog << "munmap failed for camera dma fd " << planes[0].fd.get() << " address " << std::hex << addr
+                     << std::dec << " size " << total_size << ": " << strerror(errno) << endl;
+                abort();
+            }
             reader.sendBackFinishedRequest(req);
+            break;
         }
 
         // draw camera frame
