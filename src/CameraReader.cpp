@@ -58,7 +58,7 @@ void CameraReader::sendBackFinishedRequest(libcamera::Request *req)
     }
 }
 
-bool CameraReader::configure(int expectWidth, int expectHeight, int expectedIntervalUS)
+bool CameraReader::configure(libcamera::PixelFormat fmt, int expectWidth, int expectHeight, int expectedIntervalUS)
 {
     using namespace libcamera;
 
@@ -76,7 +76,7 @@ bool CameraReader::configure(int expectWidth, int expectHeight, int expectedInte
     }
 
     auto &stream_cfg = camera_config->at(0);
-
+    stream_cfg.pixelFormat = fmt;
     stream_cfg.size.width = expectWidth;
     stream_cfg.size.height = expectHeight;
 

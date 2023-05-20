@@ -1,5 +1,7 @@
 wrap_resource(INPUT shaders/camera_frame.vs PREFIX shaders/camera_frame_vs NAMESPACE rcs TARGET camera_vs_code_gen SOURCE_VAR rcs_source_files)
-wrap_resource(INPUT shaders/camera_frame.fs PREFIX shaders/camera_frame_fs NAMESPACE rcs TARGET camera_fs_code_gen SOURCE_VAR rcs_source_files)
+wrap_resource(INPUT shaders/camera_frame_yuv420.fs PREFIX shaders/camera_frame_yuv420_fs NAMESPACE rcs TARGET camera_fs_yuv420_code_gen SOURCE_VAR rcs_source_files)
+wrap_resource(INPUT shaders/camera_frame_rgb.fs PREFIX shaders/camera_frame_rgb_fs NAMESPACE rcs TARGET camera_fs_rgb_code_gen SOURCE_VAR rcs_source_files)
+
 file(GLOB_RECURSE glhelper_source_files glhelpers/*.h glhelpers/*.cpp)
 add_library(glhelpers STATIC ${glhelper_source_files})
 target_link_libraries(glhelpers SDL2::SDL2 OpenGL::OpenGL)
@@ -10,7 +12,9 @@ add_library(naive_parts STATIC
     ${rcs_source_files}
     CameraReader.h CameraReader.cpp
     LightSensorThread.h LightSensorThread.cpp
-    RenderThread.h RenderThread.cpp
+    RenderThreadBase.h RenderThreadBase.cpp
+    RenderThread_YUV420.h RenderThread_YUV420.cpp
+    RenderThread_RGB888.h RenderThread_RGB888.cpp
     SdlHelpers.h
     TaskQueue.h)
 target_link_libraries(naive_parts glhelpers PkgConfig::libcamera SDL2::SDL2 OpenGL::OpenGL atomic pthread)

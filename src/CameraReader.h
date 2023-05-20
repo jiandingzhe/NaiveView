@@ -16,7 +16,7 @@ class CameraReader
 
     ReqQueue* filledRequests();
     void sendBackFinishedRequest(libcamera::Request*);
-    bool configure(int width, int height, int expectedIntervalUS);
+    bool configure(libcamera::PixelFormat fmt, int width, int height, int expectedIntervalUS);
     int getActualWidth() const;
     int getActualHeight() const;
     bool start();

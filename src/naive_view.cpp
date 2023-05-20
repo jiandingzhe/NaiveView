@@ -1,8 +1,10 @@
-#include "RenderThread.h"
 #include "CameraReader.h"
+#include "RenderThread_RGB888.h"
+#include "RenderThread_YUV420.h"
 
-#include <libcamera/camera_manager.h>
 #include <SDL.h>
+#include <libcamera/camera_manager.h>
+#include <libcamera/formats.h>
 
 #include <iostream>
 using std::clog;
@@ -20,9 +22,9 @@ int main()
     }
 
     CameraReader cam_reader(cameras[0]);
-    cam_reader.configure(1280, 720, 16000);
-    
-    RenderThread render(cam_reader);
+    cam_reader.configure(libcamera::formats::RGB888, 1280, 720, 16000);
+
+    RenderThread_RGB888 render(cam_reader);
 
     cam_reader.start();
     render.start();

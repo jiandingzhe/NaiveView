@@ -80,6 +80,7 @@ int main()
             clog << " " << px_fmt.toString();
         clog << endl;
     }
+    stream_cfg.pixelFormat = libcamera::formats::RGB888;
     stream_cfg.size.width = 1280;
     stream_cfg.size.height = 720;
 

@@ -25,7 +25,7 @@ void GLTexture2D::BindScope::setMono8Image(int w, int h, const void *data)
 
 void GLTexture2D::BindScope::setRGBImage(int w, int h, const void *data)
 {
-    glTexImage2D(GL_TEXTURE_2D, 0,  GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     CHECK_GL;
 }
 
