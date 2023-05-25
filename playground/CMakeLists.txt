@@ -13,3 +13,4 @@ target_compile_features(bh1750_play PUBLIC cxx_std_17)
 add_executable(draw_something_kms draw_something_kms.cpp)
 target_link_libraries(draw_something_kms glhelpers)
 
+add_executable(set_screen_brightness set_screen_brightness.cpp)
