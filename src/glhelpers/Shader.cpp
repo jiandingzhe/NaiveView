@@ -1,9 +1,10 @@
 #include "Shader.h"
 
 #include "Utils.h"
-#include <GLES2/gl2.h>
 
 #include <iostream>
+using std::clog;
+using std::endl;
 
 GLShader::GLShader(GLenum type) : id(glCreateShader(type))
 {
@@ -41,6 +42,7 @@ bool GLShader::compile(const std::string &source)
         GLsizei infoLogLength = 0;
         glGetShaderInfoLog(id, sizeof(infoLog), &infoLogLength, infoLog);
         _last_error_() = std::string(infoLog);
+        clog << "shader compilation failed: " << endl << infoLog << endl;
         assert(false);
         return false;
     }

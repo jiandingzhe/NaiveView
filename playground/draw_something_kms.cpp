@@ -1,6 +1,4 @@
-#include <GLES2/gl2.h>
 #include <SDL.h>
-#include <SDL_opengles2.h>
 
 #include <cstring>
 #include <iostream>

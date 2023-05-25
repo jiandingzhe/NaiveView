@@ -14,6 +14,7 @@ struct CameraReader::Guts
 
     std::unique_ptr<ReqQueue> queue;
     std::shared_ptr<libcamera::Camera> camera;
+    std::unique_ptr<libcamera::CameraConfiguration> cam_cfg;
     std::unique_ptr<libcamera::FrameBufferAllocator> allocator;
     std::vector<std::unique_ptr<libcamera::Request>> reqs;
     std::atomic<int> is_playing{0};
@@ -66,21 +67,20 @@ bool CameraReader::configure(libcamera::PixelFormat fmt, int expectWidth, int ex
         return false;
 
     // pick stream config
-    std::unique_ptr<CameraConfiguration> camera_config =
-        guts->camera->generateConfiguration({StreamRole::VideoRecording});
-    if (camera_config->empty())
+    guts->cam_cfg = guts->camera->generateConfiguration({StreamRole::VideoRecording});
+    if (guts->cam_cfg->empty())
     {
         clog << "failed to create any camera config from " << guts->camera->id() << endl;
         assert(false);
         return false;
     }
 
-    auto &stream_cfg = camera_config->at(0);
+    auto &stream_cfg = guts->cam_cfg->at(0);
     stream_cfg.pixelFormat = fmt;
     stream_cfg.size.width = expectWidth;
     stream_cfg.size.height = expectHeight;
 
-    auto cfg_state = camera_config->validate();
+    auto cfg_state = guts->cam_cfg->validate();
     if (cfg_state == CameraConfiguration::Invalid)
     {
         clog << "invalid camera stream configuration " << stream_cfg.toString() << " (via width " << expectWidth
@@ -90,7 +90,7 @@ bool CameraReader::configure(libcamera::PixelFormat fmt, int expectWidth, int ex
     guts->use_w = stream_cfg.size.width;
     guts->use_h = stream_cfg.size.height;
 
-    if (guts->camera->configure(camera_config.get()) != 0)
+    if (guts->camera->configure(guts->cam_cfg.get()) != 0)
     {
         clog << "camera configure failed" << endl;
         assert(false);
@@ -133,6 +133,11 @@ bool CameraReader::configure(libcamera::PixelFormat fmt, int expectWidth, int ex
     }
     guts->queue.reset(new ReqQueue(unsigned(buffers.size())));
     return true;
+}
+
+libcamera::CameraConfiguration* CameraReader::cameraConfig() const
+{
+    return guts->cam_cfg.get();
 }
 
 int CameraReader::getActualWidth() const

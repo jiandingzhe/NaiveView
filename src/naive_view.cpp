@@ -1,6 +1,5 @@
 #include "CameraReader.h"
-#include "RenderThread_RGB888.h"
-#include "RenderThread_YUV420.h"
+#include "RenderThread_EglDma.h"
 
 #include <SDL.h>
 #include <libcamera/camera_manager.h>
@@ -24,7 +23,7 @@ int main()
     CameraReader cam_reader(cameras[0]);
     cam_reader.configure(libcamera::formats::YUV420, 1280, 720, 20000);
 
-    RenderThread_YUV420 render(cam_reader);
+    RenderThread_EglDma render(cam_reader);
 
     cam_reader.start();
     render.start();

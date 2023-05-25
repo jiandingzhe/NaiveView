@@ -1,6 +1,4 @@
 #include "Program.h"
-#include <GLES2/gl2.h>
-#include <SDL_opengles2.h>
 
 #include "Utils.h"
 
@@ -52,7 +50,7 @@ void GLProgram::BindScope::setUniform(GLint loc, GLint n1)
     {
         const auto &meta = obj.guts->uniforms[loc].second;
         assert(meta.size == 1);
-        assert(meta.type == GL_INT || meta.type == GL_SAMPLER_2D || meta.type == GL_SAMPLER_CUBE);
+        assert(meta.type == GL_INT || meta.type == GL_SAMPLER_2D || meta.type == GL_SAMPLER_CUBE || meta.type == GL_SAMPLER_EXTERNAL_OES);
         glUniform1i(loc, n1);
     }
 }
@@ -181,6 +179,7 @@ inline std::pair<GLenum, int> to_scalar_type_size(GLenum type)
         return {GL_UNSIGNED_BYTE, 1};
     case GL_SAMPLER_2D:
     case GL_SAMPLER_CUBE:
+    case GL_SAMPLER_EXTERNAL_OES:
         return {type, 1};
     default:
         assert(false);

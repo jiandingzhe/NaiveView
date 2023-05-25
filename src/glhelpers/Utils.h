@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include <SDL_opengles2.h>
+#include <epoxy/gl.h>
 
 #define CHECK_GL assert(!check_gl_error(__FILE__, __LINE__))
 

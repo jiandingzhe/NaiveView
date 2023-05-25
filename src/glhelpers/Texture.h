@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL_opengles2.h>
+#include <epoxy/gl.h>
 
 class GLTexture2D
 {
@@ -17,9 +17,10 @@ class GLTexture2D
         GLTexture2D &obj;
     };
 
-    GLTexture2D(bool mag_linear = true, bool min_linear = true, bool mipmap = true);
+    GLTexture2D(GLenum type, bool mag_linear = true, bool min_linear = true, bool mipmap = true);
     GLTexture2D(const GLTexture2D &) = delete;
     ~GLTexture2D();
 
     const GLuint id;
+    const GLenum type;
 };

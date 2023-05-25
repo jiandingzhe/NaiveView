@@ -2,6 +2,7 @@
 
 #include <libcamera/camera.h>
 #include <libcamera/camera_manager.h>
+#include <libcamera/formats.h>
 
 #include <chrono>
 #include <iostream>
@@ -34,7 +35,7 @@ int main()
     }
 
     CameraReader reader(cameras[0]);
-    reader.configure(1280, 720, 16000);
+    reader.configure(libcamera::formats::YUV420, 1280, 720, 16000);
     auto* queue = reader.filledRequests();
 
     reader.start();

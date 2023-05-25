@@ -1,5 +1,4 @@
 #include "Buffer.h"
-#include <GLES2/gl2.h>
 
 #include "Utils.h"
 

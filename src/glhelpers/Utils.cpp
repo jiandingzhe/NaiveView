@@ -1,7 +1,5 @@
 #include "Utils.h"
 
-#include <SDL_opengles2.h>
-
 #include <iostream>
 #include <sstream>
 

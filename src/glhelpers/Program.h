@@ -1,7 +1,6 @@
 #pragma once
 
-#include <GLES2/gl2.h>
-#include <SDL_opengles2.h>
+#include <epoxy/gl.h>
 
 #include <memory>
 
