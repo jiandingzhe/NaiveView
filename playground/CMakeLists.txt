@@ -14,3 +14,6 @@ add_executable(draw_something_kms draw_something_kms.cpp)
 target_link_libraries(draw_something_kms glhelpers)
 
 add_executable(set_screen_brightness set_screen_brightness.cpp)
+
+add_executable(set_gpio set_gpio.cpp)
+target_link_libraries(set_gpio PkgConfig::libgpiod)
