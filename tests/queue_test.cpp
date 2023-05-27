@@ -28,7 +28,7 @@ struct TestType
 std::atomic<unsigned> TestType::n_create{0};
 std::atomic<unsigned> TestType::n_destroy{0};
 
-TaskQueue<TestType> queue{10};
+TaskQueue<TestType *> queue{10};
 int stop_flag = 0;
 
 #define NUM_TASK 50000
@@ -38,8 +38,9 @@ void thread_body()
     int n_consume = 0;
     while (n_consume < NUM_TASK)
     {
-        auto *task = queue.fetch();
-        if (task != nullptr)
+        TestType *task = nullptr;
+
+        if (queue.fetch(task))
         {
             n_consume += 1;
             delete task;

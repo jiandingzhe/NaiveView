@@ -1,10 +1,10 @@
 #pragma once
 
 #include <atomic>
-#include <vector>
 #include <cassert>
+#include <vector>
 
-// one-reader-one-writer lock-free queue
+// one-reader-one-writer lock-free ring buffer
 template <typename T> class TaskQueue
 {
     struct UsageLocation
@@ -14,65 +14,74 @@ template <typename T> class TaskQueue
     };
 
   public:
-    TaskQueue(unsigned capacity) : m_content(capacity)
+    TaskQueue(unsigned capacity) : m_content(capacity + 1)
     {
     }
     ~TaskQueue() = default;
 
-    unsigned getCapacity() const
+    unsigned getNumFilled() const
     {
-        return (unsigned)m_content.size();
+        unsigned curr_begin = m_begin;
+        unsigned curr_end = m_end;
+        // unwrap index
+        if (curr_end < curr_begin)
+            curr_end += m_content.size();
+        return curr_end - curr_begin;
     }
 
-    bool add(T *value)
+    unsigned getCapacity() const
     {
-        assert(value != nullptr);
-        UsageLocation curr_usage = m_usage.load();
-        if (curr_usage.len == m_content.size())
+        return (unsigned)m_content.size() - 1;
+    }
+
+    bool add(const T &value)
+    {
+        unsigned curr_begin = m_begin;
+        unsigned curr_end = m_end;
+        // unwrap index
+        unsigned logic_end = curr_end;
+        if (logic_end < curr_begin)
+            logic_end += m_content.size();
+
+        unsigned curr_size = logic_end - curr_begin;
+        if (curr_size >= getCapacity())
             return false;
 
         // set value
-        unsigned i_set = (curr_usage.head + curr_usage.len) % getCapacity();
-        m_content[i_set] = value;
-
-        // update location
-        while (true)
-        {
-            auto set_usage = curr_usage;
-            set_usage.len += 1;
-            if (m_usage.compare_exchange_weak(curr_usage, set_usage))
-                break;
-        }
+        m_content[curr_end] = value;
+        // update index
+        curr_end += 1;
+        if (curr_end >= m_content.size())
+            curr_end -= m_content.size();
+        m_end = curr_end;
         return true;
     }
 
-    T *fetch()
+    bool fetch(T &re)
     {
-        UsageLocation curr_usage = m_usage.load();
-        if (curr_usage.len == 0)
-            return nullptr;
+        unsigned curr_begin = m_begin;
+        unsigned curr_end = m_end;
+        // unwrap index
+        if (curr_end < curr_begin)
+            curr_end += m_content.size();
 
-        // fetch value
-        unsigned i_fetch = curr_usage.head % getCapacity();
-        T *result = m_content[i_fetch];
-        assert(result != nullptr);
-#ifndef NDEBUG
-        m_content[i_fetch] = nullptr;
-#endif
-        // update location
-        while (true)
-        {
-            auto set_usage = curr_usage;
-            set_usage.head += 1;
-            set_usage.head = set_usage.head % getCapacity();
-            set_usage.len -= 1;
-            if (m_usage.compare_exchange_weak(curr_usage, set_usage))
-                break;
-        }
-        return result;
+        unsigned curr_size = curr_end - curr_begin;
+        if (curr_size == 0)
+            return false;
+
+        // get value
+        re = std::move(m_content[curr_begin]);
+
+        // update index
+        curr_begin += 1;
+        if (curr_begin >= m_content.size())
+            curr_begin -= m_content.size();
+        m_begin = curr_begin;
+        return true;
     }
 
   private:
-    std::vector<T *> m_content;
-    std::atomic<UsageLocation> m_usage{{0u, 0u}};
+    std::vector<T> m_content;
+    std::atomic<unsigned> m_begin{0};
+    std::atomic<unsigned> m_end{0};
 };

@@ -9,7 +9,7 @@
 class CameraReader
 {
   public:
-    typedef TaskQueue<libcamera::Request> ReqQueue;
+    typedef TaskQueue<libcamera::Request*> ReqQueue;
     
     CameraReader(std::shared_ptr<libcamera::Camera> camera);
     ~CameraReader();

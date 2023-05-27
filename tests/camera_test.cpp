@@ -42,8 +42,8 @@ int main()
     std::chrono::steady_clock::time_point prev_time;
     while (!should_exit)
     {
-        auto *req = queue->fetch();
-        if (req == nullptr)
+        libcamera::Request *req = nullptr;
+        if (!queue->fetch(req))
         {
             continue;
         }

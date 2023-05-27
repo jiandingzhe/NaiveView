@@ -65,8 +65,8 @@ void RenderThreadBase::Guts::thread_body()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // try to fetch frame
-        auto *req = reader.filledRequests()->fetch();
-        if (req != nullptr)
+        libcamera::Request *req = nullptr;
+        if (reader.filledRequests()->fetch(req))
         {
             if (req->buffers().size() > 0)
             {
