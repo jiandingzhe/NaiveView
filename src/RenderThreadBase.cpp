@@ -3,7 +3,15 @@
 #include "SdlHelpers.h"
 #include "glhelpers/Buffer.h"
 
+#include <chrono>
+#include <iostream>
 #include <thread>
+
+using namespace std::chrono_literals;
+
+using std::clog;
+using std::endl;
+
 struct ScreenPoint
 {
     float x;
@@ -79,36 +87,43 @@ void RenderThreadBase::Guts::thread_body()
     // finalize
     self.shutdownGL();
     SDL_GL_DeleteContext(gl_ctx);
+    gl_ctx = nullptr;
 }
 
 RenderThreadBase::RenderThreadBase(CameraReader &reader) : guts(new Guts(*this, reader))
 {
-    guts->window.reset(
-        SDL_CreateWindow("NaiveView", 0, 0, 1080, 1920,
-                         SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL));
-    if (guts->window == nullptr)
-        throw std::runtime_error("failed to create SDL window");
 }
 
 RenderThreadBase::~RenderThreadBase()
 {
+    assert(guts->window == nullptr);
     assert(guts->gl_thread == nullptr);
 }
 
-CameraReader& RenderThreadBase::reader()
+CameraReader &RenderThreadBase::reader()
 {
     return guts->reader;
 }
 
 void RenderThreadBase::start()
 {
+    guts->window.reset(
+        SDL_CreateWindow("NaiveView", 0, 0, 1080, 1920,
+                         SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL));
+    if (guts->window == nullptr)
+        throw std::runtime_error("failed to create SDL window");
+
     guts->gl_thread.reset(new std::thread([this]() { guts->thread_body(); }));
 }
 
 void RenderThreadBase::stop()
 {
-    guts->gl_stop_flag = 1;
-    guts->gl_thread->join();
-    guts->gl_thread.reset();
-    guts->gl_stop_flag = 0;
+    if (guts->gl_thread != nullptr)
+    {
+        guts->gl_stop_flag = 1;
+        guts->gl_thread->join();
+        guts->gl_thread.reset();
+        guts->gl_stop_flag = 0;
+        guts->window.reset();
+    }
 }

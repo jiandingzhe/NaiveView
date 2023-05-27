@@ -6,11 +6,18 @@
 #include <libcamera/formats.h>
 
 #include <iostream>
+#include <thread>
 using std::clog;
 using std::endl;
 
 int main()
 {
+    if (SDL_VideoInit("KMSDRM") != 0)
+    {
+        clog << "failed to initialize SDL video in KMSDRM mode" << endl;
+        exit(EXIT_FAILURE);
+    }
+    using namespace std::chrono_literals;
     libcamera::CameraManager mgr;
     mgr.start();
     auto cameras = mgr.cameras();
@@ -21,7 +28,7 @@ int main()
     }
 
     CameraReader cam_reader(cameras[0]);
-    cam_reader.configure(libcamera::formats::YUV420, 1280, 720, 20000);
+    cam_reader.configure(libcamera::formats::YUV420, 1280, 720, 15000);
 
     RenderThread_EglDma render(cam_reader);
 
@@ -44,4 +51,5 @@ int main()
 
     render.stop();
     cam_reader.stop();
+    SDL_Quit();
 }
