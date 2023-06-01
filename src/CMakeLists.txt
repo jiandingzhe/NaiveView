@@ -5,7 +5,7 @@ wrap_resource(INPUT shaders/camera_frame_dma.fs PREFIX shaders/camera_frame_dma_
 
 file(GLOB_RECURSE glhelper_source_files glhelpers/*.h glhelpers/*.cpp)
 add_library(glhelpers STATIC ${glhelper_source_files})
-target_link_libraries(glhelpers SDL2::SDL2 OpenGL::OpenGL PkgConfig::epoxy)
+target_link_libraries(glhelpers SDL2-static OpenGL::OpenGL PkgConfig::epoxy)
 target_include_directories(glhelpers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(glhelpers PUBLIC cxx_std_17)
 target_compile_definitions(glhelpers PUBLIC -DGL_GLEXT_PROTOTYPES=1)
@@ -20,7 +20,7 @@ add_library(naive_parts STATIC
     RenderThread_EglDma.h RenderThread_EglDma.cpp
     SdlHelpers.h
     TaskQueue.h)
-target_link_libraries(naive_parts glhelpers PkgConfig::libcamera PkgConfig::libdrm SDL2::SDL2 OpenGL::OpenGL OpenGL::EGL atomic pthread)
+target_link_libraries(naive_parts glhelpers PkgConfig::libcamera PkgConfig::libdrm SDL2-static OpenGL::OpenGL OpenGL::EGL atomic pthread)
 target_include_directories(naive_parts PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 add_dependencies(naive_parts camera_vs_code_gen)
 

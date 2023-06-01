@@ -2,6 +2,7 @@
     "clangd.fallbackFlags": [
         "-I/usr/include/SDL2",
         "-I/usr/include/libcamera",
+        "-I/usr/include/libdrm",
         "-I${workspaceFolder}/src",
         "-DGL_GLEXT_PROTOTYPES=1",
         "-std=c++17"

@@ -9,10 +9,9 @@ My personal project for making a car blind-point monitor system using Raspberry 
 
 The libraries below are used in this project. Please install them using `apt`. 
 
-- libsdl2: create OpenGL context, handle IO.
 - libgpiod: access GPIO to adjust camera IR cut.
 - libcamera: handle with camera.
-- libegl, libdrm: provide zero-copy texture that directly use DMA buffer from libcamera.
+- libegl, libdrm, libgbm: provide zero-copy texture that directly use DMA buffer from libcamera.
 - libepoxy: obtain OpenGL and EGL API entries.
 
 If you want to build from source, please install their *-dev* packages. In addition, install following packages that is used in build:

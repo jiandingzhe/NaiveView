@@ -4,7 +4,7 @@ target_link_libraries(frame-fetch PkgConfig::libcamera)
 target_compile_features(frame-fetch PUBLIC cxx_std_17)
 
 add_executable(show_video_drivers show_video_drivers.cpp)
-target_link_libraries(show_video_drivers SDL2::SDL2)
+target_link_libraries(show_video_drivers SDL2-static)
 target_compile_features(show_video_drivers PUBLIC cxx_std_17)
 
 add_executable(bh1750_play bh1750_play.cpp)
