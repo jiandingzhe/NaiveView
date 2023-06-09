@@ -17,3 +17,6 @@ add_executable(set_screen_brightness set_screen_brightness.cpp)
 
 add_executable(set_gpio set_gpio.cpp)
 target_link_libraries(set_gpio PkgConfig::libgpiod)
+
+add_executable(dual_bh1750_play dual_bh1750_play.cpp)
+target_link_libraries(dual_bh1750_play naive_parts)

@@ -15,7 +15,8 @@ using std::clog;
 using std::endl;
 
 #define I2C_DEVFILE "/dev/i2c-1"
-#define ADDR 0x23
+#define ADDR_LOW 0x23
+#define ADDR_HIGH 0x5c
 
 #define CMD_POWER_DOWN 0x00
 #define CMD_POWER_ON 0x01
@@ -28,9 +29,29 @@ using std::endl;
 #define CMD_MODE_ONCE_HIRES2 0x21
 #define CMD_MODE_ONCE_LOWRES 0x23
 
-int main()
+int main(int argc, char **argv)
 {
     using namespace std::chrono_literals;
+    if (argc != 2)
+    {
+        clog << "Usage: " << argv[0] << " low/high" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    int addr = 0;
+    if (strcmp(argv[1], "low") == 0)
+    {
+        addr = ADDR_LOW;
+    }
+    else if (strcmp(argv[1], "high") == 0)
+    {
+        addr = ADDR_HIGH;
+    }
+    else
+    {
+        clog << "invalid address selection \"" << argv[1] << "\", specify \"low\" or \"high\"" << endl;
+        exit(EXIT_FAILURE);
+    }
 
     int fd = open(I2C_DEVFILE, O_RDWR);
     if (fd < 0)
@@ -40,12 +61,12 @@ int main()
     }
     clog << "opened " << I2C_DEVFILE << ": fd " << fd << endl;
 
-    if (ioctl(fd, I2C_SLAVE, ADDR) != 0)
+    if (ioctl(fd, I2C_SLAVE, addr) != 0)
     {
         clog << "failed to set slave address: " << strerror(errno) << endl;
         exit(EXIT_FAILURE);
     }
-    clog << "set address " << std::hex << ADDR << " to I2C_SLAVE" << endl;
+    clog << "set address " << std::hex << ADDR_LOW << " to I2C_SLAVE" << endl;
 
     char val;
     char buf[3];

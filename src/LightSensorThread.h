@@ -5,21 +5,17 @@
 class LightSensorThread
 {
   public:
-    enum DeviceAddr
-    {
-        Addr_Low = 0x23,
-        Addr_High = 0x5c,
-    };
     enum Mode
     {
         Mode_HighRes = 0x10,
         Mode_HighRes2 = 0x11,
         Mode_LowRes = 0x13,
     };
-    LightSensorThread(const char *i2cDeviceFile, DeviceAddr addr);
+    LightSensorThread(const char *i2cDeviceFile);
     ~LightSensorThread();
     Mode getCurrentWorkingMode() const;
     void setMode(Mode);
+    std::pair<float, float> getRawLuminance() const;
     float getLuminance() const;
 
   private:
