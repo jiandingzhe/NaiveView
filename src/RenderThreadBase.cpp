@@ -7,6 +7,8 @@
 #include <iostream>
 #include <thread>
 
+#define FPS_INTERVAL 10
+
 using namespace std::chrono_literals;
 
 using std::clog;
@@ -34,6 +36,9 @@ struct RenderThreadBase::Guts
     std::unique_ptr<GLBuffer> screen_rect_vbuf;
     std::atomic<int> gl_stop_flag{0};
     std::unique_ptr<std::thread> gl_thread;
+    size_t frame_count = 0;
+    std::chrono::steady_clock::time_point prev_fps_time;
+    float fps = 0.0f;
 };
 
 RenderThreadBase::Guts::Guts(RenderThreadBase &self, CameraReader &reader) : self(self), reader(reader)
@@ -74,6 +79,20 @@ void RenderThreadBase::Guts::thread_body()
                 self.handleBuffer(buf);
             }
             reader.sendBackFinishedRequest(req);
+            frame_count += 1;
+            if (frame_count % FPS_INTERVAL == 0)
+            {
+                auto curr_time = std::chrono::steady_clock::now();
+                if (frame_count > 0)
+                {
+                    auto ten_frame_time = curr_time - prev_fps_time;
+                    double ten_frame_sec = double(ten_frame_time.count()) *
+                                           double(decltype(ten_frame_time)::period::num) /
+                                           double(decltype(ten_frame_time)::period::den);
+                    fps = float(10.0 / ten_frame_sec);
+                }
+                prev_fps_time = curr_time;
+            }
         }
         {
             GLBuffer::BindScope buf_scope(*screen_rect_vbuf);
