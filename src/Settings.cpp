@@ -23,7 +23,9 @@ struct Settings::Guts
     int camera_width = 1280;
     int camera_height = 720;
     int i2c_index = 1;
+    int gpio_chip_index = 0;
     int ircut_gpio_index = 17;
+    float ircut_lux = 10;
     RotateCCW display_rotate = RotateCCW0;
     bool display_hflip = true;
     float screen_min_brightness = 0.3f;
@@ -140,7 +142,9 @@ bool Settings::Guts::reload_from_config_file()
         if (key == "camera_width") try_load_int(camera_width, val_str);
         else if (key == "camera_height") try_load_int(camera_height, val_str);
         else if (key == "i2c_index") try_load_int(i2c_index, val_str);
+        else if (key == "gpio_chip_index") try_load_int(gpio_chip_index, val_str);
         else if (key == "ircut_gpio_index") try_load_int(ircut_gpio_index, val_str);
+        else if (key == "ircut_lux") try_load_float(ircut_lux, val_str);
         else if (key == "display_rotate") try_load_int_enum(display_rotate, val_str);
         else if (key == "display_hflip") try_load_bool(display_hflip, val_str);
         else if (key == "screen_min_brightness") try_load_norm(screen_min_brightness, val_str);
@@ -164,7 +168,9 @@ bool Settings::Guts::save_to_config_file() const
     fprintf(fh, "camera_width\t%d\n", camera_width);
     fprintf(fh, "camera_height\t%d\n", camera_height);
     fprintf(fh, "i2c_index\t%d\n", i2c_index);
+    fprintf(fh, "gpio_chip_index\t%d\n", gpio_chip_index);
     fprintf(fh, "ircut_gpio_index\t%d\n", ircut_gpio_index);
+    fprintf(fh, "ircut_lux\t%f\n", ircut_lux);
     fprintf(fh, "display_rotate\t%d\n", display_rotate);
     fprintf(fh, "display_hflip\t%s\n", display_hflip ? "true" : "false");
     fprintf(fh, "screen_min_brightness\t%f\n", screen_min_brightness);
@@ -229,6 +235,18 @@ void Settings::reset_i2c_index()
     guts->save_to_config_file();
 }
 
+int Settings::get_gpio_chip_index() const { return guts->gpio_chip_index; }
+void Settings::set_gpio_chip_index(int v)
+{
+    guts->gpio_chip_index = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_gpio_chip_index()
+{
+    guts->gpio_chip_index = 0;
+    guts->save_to_config_file();
+}
+
 int Settings::get_ircut_gpio_index() const { return guts->ircut_gpio_index; }
 void Settings::set_ircut_gpio_index(int v)
 {
@@ -238,6 +256,18 @@ void Settings::set_ircut_gpio_index(int v)
 void Settings::reset_ircut_gpio_index()
 {
     guts->ircut_gpio_index = 17;
+    guts->save_to_config_file();
+}
+
+float Settings::get_ircut_lux() const { return guts->ircut_lux; }
+void Settings::set_ircut_lux(float v)
+{
+    guts->ircut_lux = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_ircut_lux()
+{
+    guts->ircut_lux = 10;
     guts->save_to_config_file();
 }
 

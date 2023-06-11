@@ -336,7 +336,9 @@ __DATA__
 camera_width	int	1280
 camera_height	int	720
 i2c_index	int	1
+gpio_chip_index	int	0
 ircut_gpio_index	int	17
+ircut_lux	float	10
 display_rotate	enum RotateCCW	RotateCCW0
 display_hflip	bool	true
 screen_min_brightness	norm	0.3f

@@ -38,10 +38,20 @@ class Settings
     void set_i2c_index(int);
     void reset_i2c_index();
 
+    int get_gpio_chip_index() const;
+    static int get_gpio_chip_index_default() { return 0; }
+    void set_gpio_chip_index(int);
+    void reset_gpio_chip_index();
+
     int get_ircut_gpio_index() const;
     static int get_ircut_gpio_index_default() { return 17; }
     void set_ircut_gpio_index(int);
     void reset_ircut_gpio_index();
+
+    float get_ircut_lux() const;
+    static float get_ircut_lux_default() { return 10; }
+    void set_ircut_lux(float);
+    void reset_ircut_lux();
 
     RotateCCW get_display_rotate() const;
     static RotateCCW get_display_rotate_default() { return RotateCCW0; }

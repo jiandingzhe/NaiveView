@@ -6,18 +6,6 @@
 class WaveshareScreenBrightnessSetter
 {
   public:
-    class Runner
-    {
-      public:
-        Runner();
-        ~Runner();
-
-        void setSensorLuminance(float lux);
-
-      private:
-        struct Guts;
-        std::unique_ptr<Guts> guts;
-    };
     WaveshareScreenBrightnessSetter();
     ~WaveshareScreenBrightnessSetter();
 

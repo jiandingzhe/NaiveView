@@ -2,7 +2,7 @@
 #include "LightSensorThread.h"
 #include "RenderThread_EglDma.h"
 #include "Settings.h"
-#include "WaveshareScreenBrightnessSetter.h"
+#include "LuxSetterThread.h"
 
 #include <SDL.h>
 #include <libcamera/camera_manager.h>
@@ -19,7 +19,7 @@ int main()
 
     std::string i2c_devfile = std::string("/dev/i2c-") + std::to_string(settings.get_i2c_index());
 
-    WaveshareScreenBrightnessSetter::Runner screen_setter;
+    LuxSetterThread lux_applier;
     LightSensorThread lumi_sensor(i2c_devfile);
 
     if (SDL_VideoInit("KMSDRM") != 0)
@@ -62,7 +62,7 @@ int main()
 
         // process luminance
         float lux = lumi_sensor.getLuminance();
-        screen_setter.setSensorLuminance(lux);
+        lux_applier.setSensorLuminance(lux);
     }
 
     // finalize

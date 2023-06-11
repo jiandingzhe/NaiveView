@@ -22,8 +22,19 @@ add_library(naive_parts STATIC
     TaskQueue.h
     Utils.h Utils.cpp
     WaveshareScreenBrightnessSetter.h WaveshareScreenBrightnessSetter.cpp
+    IRCutSetter.h IRCutSetter.cpp
+    LuxSetterThread.h LuxSetterThread.cpp
     Settings.h Settings.cpp)
-target_link_libraries(naive_parts glhelpers PkgConfig::libcamera PkgConfig::libdrm SDL2-static OpenGL::OpenGL OpenGL::EGL atomic pthread)
+target_link_libraries(naive_parts
+    glhelpers
+    PkgConfig::libcamera
+    PkgConfig::libdrm
+    PkgConfig::libgpiod
+    SDL2-static
+    OpenGL::OpenGL
+    OpenGL::EGL
+    atomic
+    pthread)
 target_include_directories(naive_parts PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 add_dependencies(naive_parts camera_vs_code_gen)
 
