@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 class LightSensorThread
 {
@@ -11,7 +12,7 @@ class LightSensorThread
         Mode_HighRes2 = 0x11,
         Mode_LowRes = 0x13,
     };
-    LightSensorThread(const char *i2cDeviceFile);
+    LightSensorThread(const std::string &i2cDeviceFile);
     ~LightSensorThread();
     Mode getCurrentWorkingMode() const;
     void setMode(Mode);

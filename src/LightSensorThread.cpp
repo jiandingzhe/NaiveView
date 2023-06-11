@@ -30,7 +30,7 @@ enum LightSensorAddr
 
 struct LightSensorThread::Guts
 {
-    Guts(const char *devFile);
+    Guts(const std::string &devFile);
     void try_open_dev();
 
     bool &ready_flag(LightSensorAddr);
@@ -48,20 +48,20 @@ struct LightSensorThread::Guts
     bool high_ready = false;
     float last_lux_low = std::numeric_limits<float>::signaling_NaN();
     float last_lux_high = std::numeric_limits<float>::signaling_NaN();
-    const char *const dev_file = nullptr;
+    std::string dev_file;
     int fd = -1;
     std::atomic<int> stop_flag{0};
     std::unique_ptr<std::thread> thread;
 };
 
-LightSensorThread::Guts::Guts(const char *devFile) : dev_file(devFile)
+LightSensorThread::Guts::Guts(const std::string &devFile) : dev_file(devFile)
 {
 }
 
 void LightSensorThread::Guts::try_open_dev()
 {
     assert(fd < 0);
-    fd = open(dev_file, O_RDWR);
+    fd = open(dev_file.c_str(), O_RDWR);
     if (fd < 0)
     {
         down();
@@ -234,7 +234,7 @@ void LightSensorThread::Guts::thread_body()
     down();
 }
 
-LightSensorThread::LightSensorThread(const char *i2cDeviceFile) : guts(new Guts(i2cDeviceFile))
+LightSensorThread::LightSensorThread(const std::string &i2cDeviceFile) : guts(new Guts(i2cDeviceFile))
 {
     guts->thread.reset(new std::thread([this]() { guts->thread_body(); }));
 }

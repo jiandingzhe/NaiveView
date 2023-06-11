@@ -59,6 +59,14 @@ enum UISide
     UIOnRight
 };
 
+enum RotateCCW
+{
+    RotateCCW0,
+    RotateCCW90,
+    RotateCCW180,
+    RotateCCW270
+};
+
 class Settings
 {
   public:
@@ -100,10 +108,14 @@ print $fh_src <<HEREDOC;
 
 #include "Utils.h"
 
+#include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 
-#include <cstdlib>
+using std::clog;
+using std::endl;
 
 namespace fs = std::filesystem;
 
@@ -135,6 +147,7 @@ static bool try_load_float(float& re, const std::string& str)
         re = tmp;
         return true;
     }
+    clog << "failed to parse float expression \\"" << str << "\\": " << strerror(errno) << endl;
     return false;
 }
 
@@ -149,6 +162,22 @@ static bool try_load_norm(float& re, const std::string& str)
     return false;
 }
 
+static bool try_load_bool(bool& re, const std::string& str)
+{
+    if (str == "true")
+    {
+        re = true;
+        return true;
+    }
+    else if (str == "false")
+    {
+        re = false;
+        return true;
+    }
+    clog << "failed to parse boolean expression \\"" << str << "\\"" << endl;
+    return false;
+}
+
 static bool try_load_int(int& re, const std::string& str)
 {
     const auto* headptr = str.c_str();
@@ -160,6 +189,7 @@ static bool try_load_int(int& re, const std::string& str)
         re = int(tmp);
         return true;
     }
+    clog << "failed to parse integer expression \\"" << str << "\\": " << strerror(errno) << endl;
     return false;
 }
 
@@ -174,6 +204,7 @@ static bool try_load_uint(unsigned& re, const std::string& str)
         re = unsigned(tmp);
         return true;
     }
+    clog << "failed to parse integer expression \\"" << str << "\\": " << strerror(errno) << endl;
     return false;
 }
 
@@ -196,7 +227,10 @@ bool Settings::Guts::reload_from_config_file()
     
     std::ifstream fh(config_file);
     if (!fh.is_open())
+    {
+        clog << "failed to open config file \\"" << config_file << "\\" for read:" << strerror(errno) << endl;
         return false;
+    }
     
     std::string line;
     while (std::getline(fh, line))
@@ -214,6 +248,7 @@ foreach my $i (0..$#all_settings)
     my $if_expr = $i == 0 ? 'if' : 'else if';
     my $load_expr;
     if ($mode eq 'float')       { $load_expr = "try_load_float($name, val_str)" }
+    elsif ($mode eq 'bool')     { $load_expr = "try_load_bool($name, val_str)" }
     elsif ($mode eq 'norm')     { $load_expr = "try_load_norm($name, val_str)" }
     elsif ($mode eq 'int')      { $load_expr = "try_load_int($name, val_str)"}
     elsif ($mode eq 'unsigned') { $load_expr = "try_load_uint($name, val_str)"}
@@ -233,21 +268,26 @@ bool Settings::Guts::save_to_config_file() const
     fs::create_directories(config_file.parent_path());
     auto* fh = fopen(config_file.c_str(), "w");
     if (fh == nullptr)
+    {
+        clog << "failed to open config file \\"" << config_file << "\\" for write: " << strerror(errno) << endl;
         return false;
+    }
 HEREDOC
 foreach my $data (@all_settings)
 {
     my ($name, $mode, $real_type, $defvalue) = @$data;
-    my $fmt;
-    if ($real_type eq 'float') { $fmt = '%f' }
-    elsif ($real_type eq 'int' or $mode eq 'enum') { $fmt = '%d' }
-    elsif ($real_type eq 'unsigned') { $fmt = '%u' }
+    my $dump_expr;
+    if ($real_type eq 'float') { $dump_expr = "fprintf(fh, \"$name\\t%f\\n\", $name)" }
+    elsif ($real_type eq 'int' or $mode eq 'enum') { $dump_expr = "fprintf(fh, \"$name\\t%d\\n\", $name)" }
+    elsif ($real_type eq 'unsigned') { $dump_expr = "fprintf(fh, \"$name\\t%u\\n\", $name)" }
+    elsif ($real_type eq 'bool') { $dump_expr = "fprintf(fh, \"$name\\t%s\\n\", $name ? \"true\" : \"false\")" }
     else { die "unrecognized type $mode $real_type for $name" }
     print $fh_src <<HEREDOC
-    fprintf(fh, "$name\\t$fmt", $name);
+    $dump_expr;
 HEREDOC
 }
 print $fh_src <<HEREDOC;
+    fclose(fh);
     return true;
 }
 
@@ -260,7 +300,10 @@ Settings& Settings::getInstance()
 Settings::Settings(): guts(new Guts)
 {
     guts->config_file = getSettingsFile("settings.txt");
-    guts->reload_from_config_file();
+    if (fs::is_regular_file(guts->config_file))
+        guts->reload_from_config_file();
+    else
+        guts->save_to_config_file();
 }
 
 Settings::~Settings() {}
@@ -290,7 +333,12 @@ HEREDOC
 close $fh_src;
 
 __DATA__
+camera_width	int	1280
+camera_height	int	720
 i2c_index	int	1
+ircut_gpio_index	int	17
+display_rotate	enum RotateCCW	RotateCCW0
+display_hflip	bool	true
 screen_min_brightness	norm	0.3f
 screen_mid_brightness	norm	0.65f
 lux_bound1	float	30
