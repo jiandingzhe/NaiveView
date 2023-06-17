@@ -1,5 +1,6 @@
 #include "RenderThreadBase.h"
 
+#include "SDL_video.h"
 #include "SdlHelpers.h"
 #include "glhelpers/Buffer.h"
 
@@ -22,7 +23,10 @@ struct ScreenPoint
     float t;
 };
 
-ScreenPoint screen_rect[4] = {
+ScreenPoint screen_rect_landscape[4] = {
+    {-1.0f, -1.0f, 0.0, 0.0f}, {-1.0f, 1.0f, 0.0f, 1.0f}, {1.0f, -1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}};
+
+ScreenPoint screen_rect_portrait[4] = {
     {-1.0f, -1.0f, 1.0, 0.0f}, {-1.0f, 1.0f, 0.0f, 0.0f}, {1.0f, -1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f}};
 
 struct RenderThreadBase::Guts
@@ -47,6 +51,12 @@ RenderThreadBase::Guts::Guts(RenderThreadBase &self, CameraReader &reader) : sel
 
 void RenderThreadBase::Guts::thread_body()
 {
+    // get window size
+    int win_w = 0;
+    int win_h = 0;
+    SDL_GetWindowSize(window.get(), &win_w, &win_h);
+    clog << "window size obtained in OpenGL thread: " << win_w << " " << win_h << endl;
+
     // create OpenGL context
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
@@ -54,14 +64,17 @@ void RenderThreadBase::Guts::thread_body()
     if (gl_ctx == nullptr)
         throw std::runtime_error("failed to create SDL OpenGL context");
 
-    SDL_GL_SetSwapInterval(0);
+    SDL_GL_SetSwapInterval(1);
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
     // create OpenGL objects
     screen_rect_vbuf.reset(new GLBuffer(GL_ARRAY_BUFFER));
     {
         GLBuffer::BindScope scope(*screen_rect_vbuf);
-        scope.setData(screen_rect, sizeof(screen_rect), GL_STATIC_DRAW);
+        if (win_w >= win_h)
+            scope.setData(screen_rect_landscape, sizeof(screen_rect_landscape), GL_STATIC_DRAW);
+        else
+            scope.setData(screen_rect_portrait, sizeof(screen_rect_portrait), GL_STATIC_DRAW);
     }
     self.setupGL();
 
