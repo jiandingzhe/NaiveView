@@ -1,17 +1,19 @@
 #pragma once
 
+#include "ScreenBrightnessSetter.h"
+
 #include <limits>
 #include <memory>
 
-class WaveshareScreenBrightnessSetter
+class WaveshareScreenBrightnessSetter: public ScreenBrightnessSetter
 {
   public:
     WaveshareScreenBrightnessSetter();
-    ~WaveshareScreenBrightnessSetter();
+    ~WaveshareScreenBrightnessSetter() override;
 
-    bool setBrightness(float brightnessNorm);
+    bool setBrightness(float brightnessNorm) override;
 
-    float getLastSetBrightness() const
+    float getLastAppliedBrightness() const override
     {
         return m_last_brightness;
     }

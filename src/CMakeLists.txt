@@ -21,7 +21,9 @@ add_library(naive_parts STATIC
     SdlHelpers.h
     TaskQueue.h
     Utils.h Utils.cpp
+    ScreenBrightnessSetter.h
     WaveshareScreenBrightnessSetter.h WaveshareScreenBrightnessSetter.cpp
+    PWMBrightnessSetter.h PWMBrightnessSetter.cpp
     IRCutSetter.h IRCutSetter.cpp
     LuxSetterThread.h LuxSetterThread.cpp
     Settings.h Settings.cpp)

@@ -20,3 +20,6 @@ target_link_libraries(set_gpio PkgConfig::libgpiod)
 
 add_executable(dual_bh1750_play dual_bh1750_play.cpp)
 target_link_libraries(dual_bh1750_play naive_parts)
+
+add_executable(file_type file_type.cpp)
+target_compile_features(file_type PUBLIC cxx_std_17)

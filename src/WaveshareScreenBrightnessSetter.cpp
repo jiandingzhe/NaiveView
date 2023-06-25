@@ -1,7 +1,5 @@
 #include "WaveshareScreenBrightnessSetter.h"
 
-#include "Settings.h"
-
 #include <atomic>
 #include <chrono>
 #include <cmath>
