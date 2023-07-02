@@ -17,6 +17,12 @@ enum RotateCCW
     RotateCCW270
 };
 
+enum ScreenBacklightMode
+{
+    WaveshareBacklight,
+    PWMBacklight,
+};
+
 class Settings
 {
   public:
@@ -87,6 +93,36 @@ class Settings
     static UISide get_ui_side_default() { return UIOnLeft; }
     void set_ui_side(UISide);
     void reset_ui_side();
+
+    ScreenBacklightMode get_bl_mode() const;
+    static ScreenBacklightMode get_bl_mode_default() { return WaveshareBacklight; }
+    void set_bl_mode(ScreenBacklightMode);
+    void reset_bl_mode();
+
+    int get_pwm_bl_chip() const;
+    static int get_pwm_bl_chip_default() { return 0; }
+    void set_pwm_bl_chip(int);
+    void reset_pwm_bl_chip();
+
+    int get_pwm_bl_index() const;
+    static int get_pwm_bl_index_default() { return 0; }
+    void set_pwm_bl_index(int);
+    void reset_pwm_bl_index();
+
+    int get_pwm_bl_period() const;
+    static int get_pwm_bl_period_default() { return 50000; }
+    void set_pwm_bl_period(int);
+    void reset_pwm_bl_period();
+
+    float get_pwm_bl_full_duty_cycle() const;
+    static float get_pwm_bl_full_duty_cycle_default() { return 0.0; }
+    void set_pwm_bl_full_duty_cycle(float);
+    void reset_pwm_bl_full_duty_cycle();
+
+    float get_pwm_bl_zero_duty_cycle() const;
+    static float get_pwm_bl_zero_duty_cycle_default() { return 0.7333; }
+    void set_pwm_bl_zero_duty_cycle(float);
+    void reset_pwm_bl_zero_duty_cycle();
 
   private:
     Settings();

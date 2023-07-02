@@ -28,8 +28,10 @@ static fs::path get_pwm_path(int chip_id, int exportID)
     return path;
 }
 
-PWMScreenBrightnessSetter::PWMScreenBrightnessSetter(int chipID, int exportID, double frequency)
-    : m_chip_id(chipID), m_export_id(exportID), m_period_ns(int(std::round(1e9 / frequency)))
+PWMScreenBrightnessSetter::PWMScreenBrightnessSetter(int chipID, int exportID, int periodNS, float dimmostDutyCycle,
+                                                     float brightmostDutyCycle)
+    : m_chip_id(chipID), m_export_id(exportID), m_period_ns(periodNS), m_dim_duty_cycle(dimmostDutyCycle),
+      m_bright_duty_cycle(brightmostDutyCycle)
 {
     try_setup_sysfs();
     setBrightness(0.667f);
@@ -41,7 +43,7 @@ PWMScreenBrightnessSetter::~PWMScreenBrightnessSetter()
     if (fs::is_directory(pwm_path))
     {
         auto unexport_path = get_chip_path(m_chip_id) / "unexport";
-        rawWriteMesg(unexport_path, std::to_string(m_export_id));
+        sysfsWriteToStr(unexport_path, m_export_id);
     }
 }
 
@@ -65,15 +67,19 @@ bool PWMScreenBrightnessSetter::setBrightness(float brightnessNorm)
     assert(fs::is_regular_file(duty_cycle_file));
     assert(fs::is_regular_file(en_file));
 
-    auto period_ns_str = std::to_string(m_period_ns);
-    if (rawReadMesg(period_file) != period_ns_str)
-        rawWriteMesg(period_file, period_ns_str);
+    // set period if not already set
+    if (sysfsReadStrToInt(period_file) != m_period_ns && !sysfsWriteToStr(period_file, m_period_ns))
+        return false;
 
+    // calculate and set duty cycle
     brightnessNorm = std::max(0.0f, std::min(1.0f, brightnessNorm));
-    rawWriteMesg(duty_cycle_file, std::to_string((int)std::round(double(m_period_ns) * brightnessNorm)));
+    float duty_cycle_norm = m_dim_duty_cycle + (m_bright_duty_cycle - m_dim_duty_cycle) * brightnessNorm;
+    int duty_cycle_ns = (int)std::round(duty_cycle_norm * m_period_ns);
+    sysfsWriteToStr(duty_cycle_file, duty_cycle_ns);
 
-    if (rawReadMesg(en_file) != "1")
-        rawWriteMesg(en_file, "1");
+    // turn on PWM
+    if (sysfsReadStrToInt(en_file) != 1 && !sysfsWriteToStr(en_file, 1))
+        return false;
     return true;
 }
 
@@ -87,25 +93,11 @@ float PWMScreenBrightnessSetter::getLastAppliedBrightness() const
         return std::numeric_limits<float>::signaling_NaN();
     }
 
-    auto period_str = rawReadMesg(pwm_path);
-    auto duty_cycle_str = rawReadMesg(duty_cycle_path);
-
-    char *pend = nullptr;
-    double period = strtod(period_str.c_str(), &pend);
-    if (pend == period_str.c_str())
-    {
-        clog << "failed to parse any number from period string \"" << period_str << "\"" << endl;
-        return std::numeric_limits<float>::signaling_NaN();
-    }
-    pend = nullptr;
-    double duty_cycle = strtod(duty_cycle_str.c_str(), &pend);
-    if (pend == duty_cycle_str.c_str())
-    {
-        clog << "failed to parse any number from duty cycle string \"" << duty_cycle_str << "\"" << endl;
-        return std::numeric_limits<float>::signaling_NaN();
-    }
-
-    return float(duty_cycle / period);
+    int period_ns = sysfsReadStrToInt(pwm_path);
+    int duty_cycle_ns = sysfsReadStrToInt(duty_cycle_path);
+    float duty_cycle_norm = float(duty_cycle_ns) / float(period_ns);
+    float brightness = (duty_cycle_norm - m_dim_duty_cycle) / (m_bright_duty_cycle - m_dim_duty_cycle);
+    return brightness;
 }
 
 bool PWMScreenBrightnessSetter::try_setup_sysfs()
@@ -114,7 +106,7 @@ bool PWMScreenBrightnessSetter::try_setup_sysfs()
     auto export_path = get_chip_path(m_chip_id) / "export";
     if (!fs::is_regular_file(export_path))
         return false;
-    if (!rawWriteMesg(export_path, std::to_string(m_export_id)))
+    if (!sysfsWriteToStr(export_path, m_export_id))
         return false;
     return true;
 }

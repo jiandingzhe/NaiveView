@@ -33,6 +33,12 @@ struct Settings::Guts
     float lux_bound1 = 30;
     float lux_bound2 = 500;
     UISide ui_side = UIOnLeft;
+    ScreenBacklightMode bl_mode = WaveshareBacklight;
+    int pwm_bl_chip = 0;
+    int pwm_bl_index = 0;
+    int pwm_bl_period = 50000;
+    float pwm_bl_full_duty_cycle = 0.0;
+    float pwm_bl_zero_duty_cycle = 0.7333;
 }; // end of Settings::Guts
 
 static bool try_load_float(float& re, const std::string& str)
@@ -152,6 +158,12 @@ bool Settings::Guts::reload_from_config_file()
         else if (key == "lux_bound1") try_load_float(lux_bound1, val_str);
         else if (key == "lux_bound2") try_load_float(lux_bound2, val_str);
         else if (key == "ui_side") try_load_int_enum(ui_side, val_str);
+        else if (key == "bl_mode") try_load_int_enum(bl_mode, val_str);
+        else if (key == "pwm_bl_chip") try_load_int(pwm_bl_chip, val_str);
+        else if (key == "pwm_bl_index") try_load_int(pwm_bl_index, val_str);
+        else if (key == "pwm_bl_period") try_load_int(pwm_bl_period, val_str);
+        else if (key == "pwm_bl_full_duty_cycle") try_load_norm(pwm_bl_full_duty_cycle, val_str);
+        else if (key == "pwm_bl_zero_duty_cycle") try_load_norm(pwm_bl_zero_duty_cycle, val_str);
     }
     return true;
 } // end of reload_from_config_file()
@@ -178,6 +190,12 @@ bool Settings::Guts::save_to_config_file() const
     fprintf(fh, "lux_bound1\t%f\n", lux_bound1);
     fprintf(fh, "lux_bound2\t%f\n", lux_bound2);
     fprintf(fh, "ui_side\t%d\n", ui_side);
+    fprintf(fh, "bl_mode\t%d\n", bl_mode);
+    fprintf(fh, "pwm_bl_chip\t%d\n", pwm_bl_chip);
+    fprintf(fh, "pwm_bl_index\t%d\n", pwm_bl_index);
+    fprintf(fh, "pwm_bl_period\t%d\n", pwm_bl_period);
+    fprintf(fh, "pwm_bl_full_duty_cycle\t%f\n", pwm_bl_full_duty_cycle);
+    fprintf(fh, "pwm_bl_zero_duty_cycle\t%f\n", pwm_bl_zero_duty_cycle);
     fclose(fh);
     return true;
 }
@@ -352,6 +370,78 @@ void Settings::set_ui_side(UISide v)
 void Settings::reset_ui_side()
 {
     guts->ui_side = UIOnLeft;
+    guts->save_to_config_file();
+}
+
+ScreenBacklightMode Settings::get_bl_mode() const { return guts->bl_mode; }
+void Settings::set_bl_mode(ScreenBacklightMode v)
+{
+    guts->bl_mode = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_bl_mode()
+{
+    guts->bl_mode = WaveshareBacklight;
+    guts->save_to_config_file();
+}
+
+int Settings::get_pwm_bl_chip() const { return guts->pwm_bl_chip; }
+void Settings::set_pwm_bl_chip(int v)
+{
+    guts->pwm_bl_chip = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_pwm_bl_chip()
+{
+    guts->pwm_bl_chip = 0;
+    guts->save_to_config_file();
+}
+
+int Settings::get_pwm_bl_index() const { return guts->pwm_bl_index; }
+void Settings::set_pwm_bl_index(int v)
+{
+    guts->pwm_bl_index = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_pwm_bl_index()
+{
+    guts->pwm_bl_index = 0;
+    guts->save_to_config_file();
+}
+
+int Settings::get_pwm_bl_period() const { return guts->pwm_bl_period; }
+void Settings::set_pwm_bl_period(int v)
+{
+    guts->pwm_bl_period = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_pwm_bl_period()
+{
+    guts->pwm_bl_period = 50000;
+    guts->save_to_config_file();
+}
+
+float Settings::get_pwm_bl_full_duty_cycle() const { return guts->pwm_bl_full_duty_cycle; }
+void Settings::set_pwm_bl_full_duty_cycle(float v)
+{
+    guts->pwm_bl_full_duty_cycle = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_pwm_bl_full_duty_cycle()
+{
+    guts->pwm_bl_full_duty_cycle = 0.0;
+    guts->save_to_config_file();
+}
+
+float Settings::get_pwm_bl_zero_duty_cycle() const { return guts->pwm_bl_zero_duty_cycle; }
+void Settings::set_pwm_bl_zero_duty_cycle(float v)
+{
+    guts->pwm_bl_zero_duty_cycle = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_pwm_bl_zero_duty_cycle()
+{
+    guts->pwm_bl_zero_duty_cycle = 0.7333;
     guts->save_to_config_file();
 }
 

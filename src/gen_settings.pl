@@ -67,6 +67,12 @@ enum RotateCCW
     RotateCCW270
 };
 
+enum ScreenBacklightMode
+{
+    WaveshareBacklight,
+    PWMBacklight,
+};
+
 class Settings
 {
   public:
@@ -346,3 +352,9 @@ screen_mid_brightness	norm	0.65f
 lux_bound1	float	30
 lux_bound2	float	500
 ui_side	enum UISide	UIOnLeft
+bl_mode	enum ScreenBacklightMode	WaveshareBacklight
+pwm_bl_chip	int	0
+pwm_bl_index	int	0
+pwm_bl_period	int	50000
+pwm_bl_full_duty_cycle	norm	0.0
+pwm_bl_zero_duty_cycle	norm	0.7333

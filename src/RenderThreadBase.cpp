@@ -103,6 +103,7 @@ void RenderThreadBase::Guts::thread_body()
                                            double(decltype(ten_frame_time)::period::num) /
                                            double(decltype(ten_frame_time)::period::den);
                     fps = float(10.0 / ten_frame_sec);
+                    clog << "FPS " << fps << endl;
                 }
                 prev_fps_time = curr_time;
             }
@@ -158,4 +159,9 @@ void RenderThreadBase::stop()
         guts->gl_stop_flag = 0;
         guts->window.reset();
     }
+}
+
+float RenderThreadBase::getFPS() const
+{
+    return guts->fps;
 }

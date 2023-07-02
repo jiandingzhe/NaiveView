@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <pwd.h>
+#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -41,7 +42,7 @@ fs::path getSettingsFile(const std::string &filename)
     return getSettingsDir() / filename;
 }
 
-std::string rawReadMesg(const std::filesystem::path &file)
+std::string sysfsReadStr(const std::filesystem::path &file)
 {
     int fh = open(file.c_str(), O_RDONLY);
     if (fh < 0)
@@ -71,7 +72,27 @@ std::string rawReadMesg(const std::filesystem::path &file)
     return result;
 }
 
-bool rawWriteMesg(const std::filesystem::path &filename, const std::string &mesg)
+int sysfsReadStrToInt(const std::filesystem::path &file, int fallback)
+{
+    std::string content = sysfsReadStr(file);
+    if (content.length() == 0)
+    {
+        clog << "cannot parse integer from empty content read from file \"" << file << "\"" << endl;
+        return fallback;
+    }
+
+    const char *nptr = content.c_str();
+    char *endptr = nullptr;
+    auto re = strtol(nptr, &endptr, 0);
+    if (endptr == nptr)
+    {
+        clog << "failed to parse integer from content \"" << content << "\" read from file \"" << file << "\"" << endl;
+        return fallback;
+    }
+    return int(re);
+}
+
+bool sysfsWriteStr(const std::filesystem::path &filename, const std::string &mesg)
 {
     int fh = open(filename.c_str(), O_WRONLY);
     if (fh < 0)
@@ -87,4 +108,9 @@ bool rawWriteMesg(const std::filesystem::path &filename, const std::string &mesg
     }
     close(fh);
     return true;
+}
+
+bool sysfsWriteToStr(const std::filesystem::path &filename, int mesg)
+{
+    return sysfsWriteStr(filename, std::to_string(mesg));
 }

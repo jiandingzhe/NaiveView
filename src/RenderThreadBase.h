@@ -15,6 +15,8 @@ class RenderThreadBase
     void start();
     void stop();
 
+    float getFPS() const;
+
   protected:
     virtual void setupGL() = 0;
     virtual void handleBuffer(libcamera::FrameBuffer *) = 0;

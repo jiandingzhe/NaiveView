@@ -10,8 +10,10 @@ target_include_directories(glhelpers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(glhelpers PUBLIC cxx_std_17)
 target_compile_definitions(glhelpers PUBLIC -DGL_GLEXT_PROTOTYPES=1)
 
+file(GLOB elem_source_files elements/*.h elements/*.cpp)
 add_library(naive_parts STATIC
     ${rcs_source_files}
+    ${elem_source_files}
     CameraReader.h CameraReader.cpp
     LightSensorThread.h LightSensorThread.cpp
     RenderThreadBase.h RenderThreadBase.cpp
@@ -21,10 +23,6 @@ add_library(naive_parts STATIC
     SdlHelpers.h
     TaskQueue.h
     Utils.h Utils.cpp
-    ScreenBrightnessSetter.h
-    WaveshareScreenBrightnessSetter.h WaveshareScreenBrightnessSetter.cpp
-    PWMBrightnessSetter.h PWMBrightnessSetter.cpp
-    IRCutSetter.h IRCutSetter.cpp
     LuxSetterThread.h LuxSetterThread.cpp
     Settings.h Settings.cpp)
 target_link_libraries(naive_parts
