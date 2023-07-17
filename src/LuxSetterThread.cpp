@@ -10,9 +10,13 @@
 #include <atomic>
 #include <cassert>
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <string>
 #include <thread>
+
+using std::clog;
+using std::endl;
 
 struct LuxSetterThread::Guts
 {
@@ -63,6 +67,7 @@ void LuxSetterThread::Guts::thread_body()
                 if (!setIRCutGPIOState(settings.get_gpio_chip_index(), settings.get_ircut_gpio_index(), ircut_state))
                     old_ircut_state = -1;
             }
+            clog << "set brightness " << screen_brightness << endl;
             screen_setter->setBrightness(screen_brightness);
         }
 
