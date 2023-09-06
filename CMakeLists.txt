@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(NaiveView)
 
 include(cmake/WrapResource.cmake)
+include(GNUInstallDirs)
 
 find_package(Perl REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -17,3 +18,5 @@ add_subdirectory(SDL)
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(playground)
+
+install(FILES naive_view.service DESTINATION /${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)

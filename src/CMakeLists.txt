@@ -40,3 +40,5 @@ add_dependencies(naive_parts camera_vs_code_gen)
 
 add_executable(naive_view naive_view.cpp)
 target_link_libraries(naive_view naive_parts)
+
+install(TARGETS naive_view DESTINATION ${CMAKE_INSTALL_BINDIR})

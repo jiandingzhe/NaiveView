@@ -1,0 +1,12 @@
+[Unit]
+Description=naive view blind-point monitor service
+Wants=systemd-udevd.service
+After=systemd-udevd.service
+
+[Service]
+Type=simple
+ExecStart=naive_view
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
