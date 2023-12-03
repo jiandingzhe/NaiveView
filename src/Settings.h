@@ -39,6 +39,16 @@ class Settings
     void set_camera_height(int);
     void reset_camera_height();
 
+    float get_camera_brightness() const;
+    static float get_camera_brightness_default() { return 0.0f; }
+    void set_camera_brightness(float);
+    void reset_camera_brightness();
+
+    float get_camera_contrast() const;
+    static float get_camera_contrast_default() { return 1.0f; }
+    void set_camera_contrast(float);
+    void reset_camera_contrast();
+
     int get_i2c_index() const;
     static int get_i2c_index_default() { return 1; }
     void set_i2c_index(int);

@@ -38,8 +38,11 @@ int main()
     }
 
     CameraReader cam_reader(cameras[0]);
-    cam_reader.configure(libcamera::formats::YUV420, settings.get_camera_width(), settings.get_camera_height(), 20000);
+    cam_reader.setBrightness(settings.get_camera_brightness());
+    cam_reader.setContrast(settings.get_camera_contrast());
 
+    cam_reader.configure(libcamera::formats::YUV420, settings.get_camera_width(), settings.get_camera_height(), 20000);
+    
     RenderThread_EglDma render(cam_reader);
 
     cam_reader.start();

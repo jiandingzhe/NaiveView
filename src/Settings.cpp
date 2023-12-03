@@ -22,6 +22,8 @@ struct Settings::Guts
     fs::path config_file;
     int camera_width = 1280;
     int camera_height = 720;
+    float camera_brightness = 0.0f;
+    float camera_contrast = 1.0f;
     int i2c_index = 1;
     int gpio_chip_index = 0;
     int ircut_gpio_index = 17;
@@ -147,6 +149,8 @@ bool Settings::Guts::reload_from_config_file()
         std::string val_str = line.substr(delim+1);
         if (key == "camera_width") try_load_int(camera_width, val_str);
         else if (key == "camera_height") try_load_int(camera_height, val_str);
+        else if (key == "camera_brightness") try_load_float(camera_brightness, val_str);
+        else if (key == "camera_contrast") try_load_float(camera_contrast, val_str);
         else if (key == "i2c_index") try_load_int(i2c_index, val_str);
         else if (key == "gpio_chip_index") try_load_int(gpio_chip_index, val_str);
         else if (key == "ircut_gpio_index") try_load_int(ircut_gpio_index, val_str);
@@ -179,6 +183,8 @@ bool Settings::Guts::save_to_config_file() const
     }
     fprintf(fh, "camera_width\t%d\n", camera_width);
     fprintf(fh, "camera_height\t%d\n", camera_height);
+    fprintf(fh, "camera_brightness\t%f\n", camera_brightness);
+    fprintf(fh, "camera_contrast\t%f\n", camera_contrast);
     fprintf(fh, "i2c_index\t%d\n", i2c_index);
     fprintf(fh, "gpio_chip_index\t%d\n", gpio_chip_index);
     fprintf(fh, "ircut_gpio_index\t%d\n", ircut_gpio_index);
@@ -238,6 +244,30 @@ void Settings::set_camera_height(int v)
 void Settings::reset_camera_height()
 {
     guts->camera_height = 720;
+    guts->save_to_config_file();
+}
+
+float Settings::get_camera_brightness() const { return guts->camera_brightness; }
+void Settings::set_camera_brightness(float v)
+{
+    guts->camera_brightness = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_camera_brightness()
+{
+    guts->camera_brightness = 0.0f;
+    guts->save_to_config_file();
+}
+
+float Settings::get_camera_contrast() const { return guts->camera_contrast; }
+void Settings::set_camera_contrast(float v)
+{
+    guts->camera_contrast = v;
+    guts->save_to_config_file();
+}
+void Settings::reset_camera_contrast()
+{
+    guts->camera_contrast = 1.0f;
     guts->save_to_config_file();
 }
 

@@ -20,6 +20,8 @@ struct CameraReader::Guts
     std::atomic<int> is_playing{0};
 
     std::int64_t fuck_pair[2] = {};
+    float brightness = 0.0f;
+    float contrast = 1.0f;
     int use_w = 0;
     int use_h = 0;
 };
@@ -120,6 +122,8 @@ bool CameraReader::configure(libcamera::PixelFormat fmt, int expectWidth, int ex
         }
 
         req->controls().set(controls::FrameDurationLimits, Span<const int64_t, 2>(guts->fuck_pair));
+        req->controls().set(controls::Brightness, guts->brightness);
+        req->controls().set(controls::Contrast, guts->contrast);
 
         const std::unique_ptr<FrameBuffer> &buffer = buffers[i];
         int ret = req->addBuffer(stream, buffer.get());
@@ -148,6 +152,12 @@ int CameraReader::getActualHeight() const
 {
     return guts->use_h;
 }
+
+float CameraReader::getBrightness() const { return guts->brightness; }
+float CameraReader::getContrast() const { return guts->contrast; }
+void CameraReader::setBrightness(float v) { guts->brightness = v; }
+void CameraReader::setContrast(float v) { guts->contrast = v; }
+    
 
 bool CameraReader::start()
 {

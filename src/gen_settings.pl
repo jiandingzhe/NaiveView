@@ -341,6 +341,8 @@ close $fh_src;
 __DATA__
 camera_width	int	1280
 camera_height	int	720
+camera_brightness	float	0.0f
+camera_contrast	float	1.0f
 i2c_index	int	1
 gpio_chip_index	int	0
 ircut_gpio_index	int	17

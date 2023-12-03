@@ -20,6 +20,10 @@ class CameraReader
     libcamera::CameraConfiguration* cameraConfig() const;
     int getActualWidth() const;
     int getActualHeight() const;
+    float getBrightness() const;
+    float getContrast() const;
+    void setBrightness(float);
+    void setContrast(float);
     bool start();
     void stop();
 
